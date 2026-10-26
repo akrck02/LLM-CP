@@ -1,0 +1,78 @@
+// The contract between the llmcp hub and its clients. Every call names the session that makes
+// it; the hub answers errors with a gRPC status whose message starts with the error's code
+// ("hub.session-not-found: alice").
+syntax = "proto3";
+
+package llmcp;
+
+option go_package = "github.com/akrck02/LLM-CP/protocol";
+
+// Hub is where sessions meet: they join, listen to topics, publish and read.
+service Hub {
+  // Join adds a session with a unique name.
+  rpc Join(SessionRequest) returns (Done);
+  // Leave removes a session and frees its name.
+  rpc Leave(SessionRequest) returns (Done);
+  // Sessions lists who has joined and what each one listens to.
+  rpc Sessions(SessionRequest) returns (SessionList);
+  // Listen makes a session listen to a topic.
+  rpc Listen(ListenRequest) returns (Done);
+  // Unlisten makes a session stop listening to a topic.
+  rpc Unlisten(TopicRequest) returns (Done);
+  // Publish adds a message to a topic.
+  rpc Publish(PublishRequest) returns (Message);
+  // Read gives the messages waiting for a session, waiting for one if asked to.
+  rpc Read(ReadRequest) returns (MessageList);
+}
+
+message SessionRequest {
+  string session = 1;
+}
+
+message TopicRequest {
+  string session = 1;
+  string topic = 2;
+}
+
+message ListenRequest {
+  string session = 1;
+  string topic = 2;
+  // past also gives the messages the topic held before listening.
+  bool past = 3;
+}
+
+message PublishRequest {
+  string session = 1;
+  string topic = 2;
+  string text = 3;
+}
+
+message ReadRequest {
+  string session = 1;
+  // wait_seconds is how long to wait for a message if none is waiting; 0 answers at once.
+  uint32 wait_seconds = 2;
+}
+
+message Done {}
+
+message Session {
+  string name = 1;
+  repeated string topics = 2;
+}
+
+message SessionList {
+  repeated Session sessions = 1;
+}
+
+message Message {
+  uint64 number = 1;
+  string topic = 2;
+  string from = 3;
+  string text = 4;
+  // published is in Unix seconds.
+  int64 published = 5;
+}
+
+message MessageList {
+  repeated Message messages = 1;
+}
