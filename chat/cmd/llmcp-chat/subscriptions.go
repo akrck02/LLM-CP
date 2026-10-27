@@ -124,8 +124,11 @@ func (sender publisher) serveSubscriptionList(response http.ResponseWriter, requ
 		http.Error(response, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if topics == nil {
+		topics = []string{} // someone new: an empty list, not null
+	}
 	response.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(response).Encode(slices.Concat([]string{}, topics)); err != nil {
+	if err := json.NewEncoder(response).Encode(topics); err != nil {
 		slog.Warn("could not send the subscriptions", "as", as, "error", err)
 	}
 }

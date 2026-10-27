@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/akrck02/LLM-CP/internal/failure"
@@ -115,4 +118,14 @@ func listenedBy(test *testing.T, sender publisher, name string) []string {
 		test.Fatal(err)
 	}
 	return topics
+}
+
+// The page reads the answer as a list; someone new gets an empty one, not null.
+func TestSomeoneNewIsGivenAnEmptyListOfSubscriptions(test *testing.T) {
+	sender, _ := startHub(test)
+	response := httptest.NewRecorder()
+	sender.serveSubscriptions().ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/subscriptions?as=bob", nil))
+	if body := strings.TrimSpace(response.Body.String()); response.Code != http.StatusOK || body != "[]" {
+		test.Errorf("the answer is %d %q", response.Code, body)
+	}
 }
