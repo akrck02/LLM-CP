@@ -50,7 +50,7 @@ func (hub *Hub) AddMember(by, group, member string) error {
 	}
 	hub.mutex.Lock()
 	defer hub.mutex.Unlock()
-	found, err := hub.findGroup(by, group)
+	found, err := hub.findChangeableGroup(by, group)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (hub *Hub) AddMember(by, group, member string) error {
 func (hub *Hub) RemoveMember(by, group, member string) error {
 	hub.mutex.Lock()
 	defer hub.mutex.Unlock()
-	found, err := hub.findGroup(by, group)
+	found, err := hub.findChangeableGroup(by, group)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (hub *Hub) RemoveMember(by, group, member string) error {
 func (hub *Hub) RemoveGroup(by, group string) error {
 	hub.mutex.Lock()
 	defer hub.mutex.Unlock()
-	if _, err := hub.findGroup(by, group); err != nil {
+	if _, err := hub.findChangeableGroup(by, group); err != nil {
 		return err
 	}
 	delete(hub.groups, group)
@@ -123,6 +123,44 @@ func (hub *Hub) findGroup(by, name string) (*Group, error) {
 	return group, nil
 }
 
+// findChangeableGroup finds a group whose members may change: any but a pair. The caller holds the
+// mutex.
+func (hub *Hub) findChangeableGroup(by, name string) (*Group, error) {
+	group, err := hub.findGroup(by, name)
+	if err != nil {
+		return nil, err
+	}
+	if IsPair(name) {
+		return nil, failure.Wrap(PairFixed, name, nil)
+	}
+	return group, nil
+}
+
+// pairFor is where a message from a session to a topic goes: to '@name' of another session, or
+// to a pair's name, it is their pair, made if it is not there yet (made says so); to anything
+// else, the topic itself. The caller holds the mutex.
+func (hub *Hub) pairFor(from, topic string) (destination string, made bool) {
+	other, isAddress := strings.CutPrefix(topic, ownTopicPrefix)
+	switch {
+	case isAddress && other != from:
+		topic = PairOf(from, other)
+	case !IsPair(topic):
+		return topic, false
+	}
+	first, second, _ := pairMembers(topic)
+	if from != first && from != second {
+		return topic, false // not its pair: mayPublish refuses it
+	}
+	if _, exists := hub.groups[topic]; exists {
+		return topic, false
+	}
+	pair := &Group{Name: topic}
+	hub.groups[topic] = pair
+	hub.addMember(pair, first)
+	hub.addMember(pair, second)
+	return topic, true
+}
+
 // addMember puts a session in a group, and makes it listen if it is on the hub. The caller holds
 // the mutex.
 func (hub *Hub) addMember(group *Group, member string) {
@@ -154,10 +192,10 @@ func (hub *Hub) listenFromNow(joined *session, topic string) {
 }
 
 // mayPublish tells whether a session may publish to a topic: anyone may, except to a group it is
-// not a member of. The caller holds the mutex.
+// not a member of, or to a pair that is not its own. The caller holds the mutex.
 func (hub *Hub) mayPublish(from, topic string) error {
 	group, isGroup := hub.groups[topic]
-	if isGroup && !slices.Contains(group.Members, from) {
+	if isGroup && !slices.Contains(group.Members, from) || !isGroup && IsPair(topic) {
 		return failure.Wrap(NotAMember, from+" in "+topic, nil)
 	}
 	return nil

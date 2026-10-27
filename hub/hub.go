@@ -175,7 +175,9 @@ func (hub *Hub) Unlisten(name, topic string) error {
 	return nil
 }
 
-// Publish adds a message to a topic, where it waits for every session listening to it.
+// Publish adds a message to a topic, where it waits for every session listening to it. A message
+// to another session's '@name' goes to their pair (see PairOf), made with the first message; the
+// message it returns says where it went.
 func (hub *Hub) Publish(from, topic, text string) (Message, error) {
 	if !validTopic(topic) {
 		return Message{}, failure.Wrap(InvalidName, topic, nil)
@@ -189,6 +191,7 @@ func (hub *Hub) Publish(from, topic, text string) (Message, error) {
 	if err != nil {
 		return Message{}, err
 	}
+	topic, pairMade := hub.pairFor(from, topic)
 	if err := hub.mayPublish(from, topic); err != nil {
 		return Message{}, err
 	}
@@ -207,8 +210,11 @@ func (hub *Hub) Publish(from, topic, text string) (Message, error) {
 	hub.topics[topic] = append(hub.topics[topic], message)
 	hub.wakeListeners(topic, from)
 	hub.tellWatchers(message)
-	if typed {
+	if typed || pairMade {
 		hub.stateChanged()
+	}
+	if pairMade {
+		return message, hub.keep() // the message is out either way
 	}
 	return message, nil
 }

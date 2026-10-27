@@ -17,6 +17,7 @@ var (
 	KindTaken       = failure.Define("hub.kind-taken", "the topic has another kind; remove it to make it again")
 	UnknownKind     = failure.Define("hub.unknown-kind", "a topic is a conversation or metrics")
 	NotAPoint       = failure.Define("hub.not-a-point", `a metrics topic takes {"name", "title", "value", "unit", "labels", "at"}`)
+	PairFixed       = failure.Define("hub.pair-fixed", "a pair is always its two sessions: it cannot change members or be removed")
 	KeepUnreadable  = failure.Define("hub.keep-unreadable", "the file of kept topics and groups cannot be read")
 	KeepUnwritable  = failure.Define("hub.keep-unwritable", "the change was made, but the file of kept topics and groups could not be written")
 )
@@ -24,7 +25,7 @@ var (
 // Codes lists every code, so a program can find one by its name.
 var Codes = []*failure.Code{SessionNotFound, NameTaken, InvalidName, TopicReserved, NotListening, EmptyMessage,
 	GroupExists, GroupNotFound, NotAMember, WatcherBehind, KindTaken, UnknownKind, NotAPoint,
-	KeepUnreadable, KeepUnwritable}
+	PairFixed, KeepUnreadable, KeepUnwritable}
 
 // CodeNamed is the code with that name, or nil if there is none.
 func CodeNamed(name string) *failure.Code {
