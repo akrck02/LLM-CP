@@ -23,6 +23,100 @@ service Hub {
   rpc Publish(PublishRequest) returns (Message);
   // Read gives the messages waiting for a session, waiting for one if asked to.
   rpc Read(ReadRequest) returns (MessageList);
+  // Watch streams every message published to any topic, own topics included, and the hub's
+  // state each time it changes, for a person looking on. Its first event is the state. It needs
+  // no session: whoever can open the socket may watch.
+  rpc Watch(WatchRequest) returns (stream Event);
+  // CreateGroup makes a group: a topic with a theme and chosen members, who listen to it.
+  rpc CreateGroup(GroupRequest) returns (Done);
+  // AddMember adds a session to a group.
+  rpc AddMember(MemberRequest) returns (Done);
+  // RemoveMember takes a session out of a group.
+  rpc RemoveMember(MemberRequest) returns (Done);
+  // RemoveGroup turns a group back into a plain topic.
+  rpc RemoveGroup(TopicRequest) returns (Done);
+  // Groups lists every group with its theme and members.
+  rpc Groups(SessionRequest) returns (GroupList);
+  // Archive keeps a topic out of the list of chats; Restore brings it back.
+  rpc Archive(TopicRequest) returns (Done);
+  rpc Restore(TopicRequest) returns (Done);
+  // Typing says a session started (or, with stopped, ended) thinking of an answer.
+  rpc Typing(TypingRequest) returns (Done);
+  // Declare gives a topic its kind ("conversation" or "metrics") for its whole life.
+  rpc Declare(KindRequest) returns (Done);
+  // RemoveTopic deletes a topic: its messages, its kind and every place in it.
+  rpc RemoveTopic(TopicRequest) returns (Done);
+}
+
+message KindRequest {
+  string session = 1;
+  string topic = 2;
+  string kind = 3;
+}
+
+// TopicKind is a declared topic: its kind, and who has published to it.
+message TopicKind {
+  string topic = 1;
+  string kind = 2;
+  repeated string publishers = 3;
+}
+
+message GroupRequest {
+  string session = 1;
+  string group = 2;
+  string theme = 3;
+  repeated string members = 4;
+}
+
+message MemberRequest {
+  string session = 1;
+  string group = 2;
+  string member = 3;
+}
+
+message TypingRequest {
+  string session = 1;
+  bool stopped = 2;
+}
+
+message Group {
+  string name = 1;
+  string theme = 2;
+  repeated string members = 3;
+}
+
+message GroupList {
+  repeated Group groups = 1;
+}
+
+message Contact {
+  string name = 1;
+  repeated string topics = 2;
+  repeated string groups = 3;
+  // typing_until is when it stops showing as typing, in Unix milliseconds; 0 when it is not.
+  int64 typing_until = 4;
+  // last_seen is in Unix seconds.
+  int64 last_seen = 5;
+}
+
+// State is everything a person looking on sees besides the messages, sent whole when it changes.
+message State {
+  repeated Contact contacts = 1;
+  repeated Group groups = 2;
+  repeated string archived = 3;
+  repeated TopicKind kinds = 4;
+}
+
+message Event {
+  oneof kind {
+    Message message = 1;
+    State state = 2;
+  }
+}
+
+message WatchRequest {
+  // past starts with every message the hub holds, oldest first.
+  bool past = 1;
 }
 
 message SessionRequest {

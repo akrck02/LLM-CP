@@ -13,3 +13,9 @@ var (
 
 // StdinNotRead is returned when a message's text cannot be read from stdin.
 var StdinNotRead = failure.Define("llmcp.stdin-not-read", "the message's text could not be read from stdin")
+
+// The codes of the hooks' way to find a session by its client (see clients.go).
+var (
+	ClientNotRemembered = failure.Define("llmcp.client-not-remembered", "the session's name could not be written down for its client")
+	UnknownClient       = failure.Define("llmcp.unknown-client", "no session joined from that client; join first")
+)

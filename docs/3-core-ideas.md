@@ -43,6 +43,14 @@ The command line opens a connection for each command and closes it, so the hub c
 session ends. Instead, every command says "still here". A session silent for 30 minutes is dropped,
 and its name is free again. `llmcp leave` frees it at once.
 
+## Declared topics and groups last
+
+The hub keeps messages in memory: a restart empties the notice boards. But some boards are
+places, not moments: a team's group, a metrics channel. So a topic declared with
+`llmcp topic declare`, and every group, is written to a small file and put back when the hub
+starts again, with its kind, theme and members, even if nobody listens to it. Their messages are
+not kept; a topic that only appeared because someone wrote to it goes with the restart.
+
 ## Why a command line, not MCP
 
 Assistants can also call tools through MCP. A command line was chosen because each call is a short

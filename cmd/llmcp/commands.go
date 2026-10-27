@@ -36,6 +36,13 @@ var clientCommands = map[string]func(call) error{
 	"unlisten": unlisten,
 	"publish":  publish,
 	"read":     read,
+	"group":    group,
+	"groups":   groups,
+	"archive":  archive,
+	"restore":  restore,
+	"typing":   typing,
+	"topic":    topic,
+	"metric":   metric,
 }
 
 // run carries out the command named first among the arguments, the options being anywhere.
@@ -50,7 +57,7 @@ func run(arguments []string) error {
 	name := given.arguments[0]
 	given.arguments = given.arguments[1:]
 	if name == "hub" {
-		return runHub(given.socket)
+		return runHub(given.socket, given.keep)
 	}
 	command, found := clientCommands[name]
 	if !found {
@@ -83,13 +90,20 @@ func runClientCommand(command func(call) error, given options) error {
 	return fromStatus(command(sent), given.socket)
 }
 
-// runHub serves a hub on the socket until the process is interrupted or terminated.
-func runHub(socket string) error {
+// runHub serves a hub on the socket until the process is interrupted or terminated, keeping its
+// declared topics and groups in a file (none for "").
+func runHub(socket, keepPath string) error {
+	meeting := hub.New(silenceLimit, time.Now)
+	if keepPath != "" {
+		if err := meeting.KeepIn(keepPath); err != nil {
+			return err
+		}
+	}
 	listener, err := server.Listen(socket)
 	if err != nil {
 		return err
 	}
-	served := server.New(hub.New(silenceLimit, time.Now))
+	served := server.New(meeting)
 	stop, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 	go func() {
@@ -104,6 +118,11 @@ func join(sent call) error {
 	if _, err := sent.client.Join(sent.request, &protocol.SessionRequest{Session: sent.session}); err != nil {
 		return err
 	}
+	if client := os.Getenv(clientVariable); client != "" {
+		if err := rememberClient(sent.given.socket, client, sent.session); err != nil {
+			return err
+		}
+	}
 	return sent.answer.done("joined as " + sent.session + ", listening to " + hub.OwnTopic(sent.session))
 }
 
@@ -111,6 +130,9 @@ func join(sent call) error {
 func leave(sent call) error {
 	if _, err := sent.client.Leave(sent.request, &protocol.SessionRequest{Session: sent.session}); err != nil {
 		return err
+	}
+	if client := os.Getenv(clientVariable); client != "" {
+		forgetClient(sent.given.socket, client, sent.session)
 	}
 	return sent.answer.done("left; " + sent.session + " is free")
 }

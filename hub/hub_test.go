@@ -246,3 +246,18 @@ func TestAReadThatWaitsKeepsWaitingAfterAStaleWakeUp(test *testing.T) {
 		test.Fatalf("got %v, %v", messages, err)
 	}
 }
+
+func TestAWatcherSeesEveryTopicIncludingInboxes(test *testing.T) {
+	hub, _ := newHub(test, "alice", "bob")
+	mustPublish(test, hub, "alice", "api", "before")
+	watcher, past := hub.Watch(true)
+	defer hub.Unwatch(watcher)
+	if len(past) != 1 || past[0].Text != "before" {
+		test.Fatalf("past: %v", past)
+	}
+	mustPublish(test, hub, "bob", OwnTopic("alice"), "private")
+	<-watcher.Events // the state it starts with
+	if event := <-watcher.Events; event.Message == nil || event.Message.Text != "private" {
+		test.Fatalf("got %+v", event)
+	}
+}

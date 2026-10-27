@@ -64,3 +64,18 @@ func TestAWaitLongerThanTheSilenceLimitIsRefused(test *testing.T) {
 		test.Fatalf("got %v", err)
 	}
 }
+
+func TestGroupsPrintOneLineEach(test *testing.T) {
+	output := &strings.Builder{}
+	groups := []*protocol.Group{
+		{Name: "api", Theme: "the tasks API", Members: []string{"alice", "bob"}},
+		{Name: "docs", Members: []string{"carol"}},
+	}
+	if err := newPrinter(output, false).groups(groups); err != nil {
+		test.Fatal(err)
+	}
+	want := "api (alice, bob): the tasks API\ndocs (carol)\n"
+	if output.String() != want {
+		test.Fatalf("got %q, want %q", output.String(), want)
+	}
+}

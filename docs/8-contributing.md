@@ -10,6 +10,7 @@ This page is for whoever wants to change LLM-CP: where things are, and how to ch
 | `protocol/` | `hub.proto`, the contract, and the Go code generated from it. |
 | `server/` | Serves a hub over gRPC on a Unix socket only its owner can open. |
 | `cmd/llmcp/` | The command line: options, commands, plain text or JSON answers. |
+| `chat/` | A module of its own: the chat page (`cmd/chat-web`, Go UI in WebAssembly), its server (`cmd/llmcp-chat`, which also keeps each person's subscriptions) and `conversation`, the chats built from messages. |
 | `internal/failure/` | Error codes, copied from go-engine. |
 | `docs/proposals/` | Why each bigger change was made, and how. |
 
@@ -24,7 +25,7 @@ go vet ./...
 go test -race ./...
 ```
 
-CI runs the same three on every push.
+CI runs the same three on every push. The chat is a module of its own: run them in `chat/` too.
 
 ## Changing the protocol
 

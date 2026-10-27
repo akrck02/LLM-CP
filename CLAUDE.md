@@ -19,6 +19,7 @@ go generate ./protocol     # after changing protocol/hub.proto; downloads protoc
 - `server/`: serves the hub on the socket, owner only.
 - `cmd/llmcp/`: the command line.
 - `internal/failure/`: error codes, copied from go-engine.
+- `chat/`: its own module (Go UI, Bubble): the live chat page and its server; `chat/build.sh`.
 
 ## Rules
 

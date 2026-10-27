@@ -25,6 +25,685 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type KindRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	Topic         string                 `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	Kind          string                 `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KindRequest) Reset() {
+	*x = KindRequest{}
+	mi := &file_hub_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KindRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KindRequest) ProtoMessage() {}
+
+func (x *KindRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KindRequest.ProtoReflect.Descriptor instead.
+func (*KindRequest) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *KindRequest) GetSession() string {
+	if x != nil {
+		return x.Session
+	}
+	return ""
+}
+
+func (x *KindRequest) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *KindRequest) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+// TopicKind is a declared topic: its kind, and who has published to it.
+type TopicKind struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	Kind          string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Publishers    []string               `protobuf:"bytes,3,rep,name=publishers,proto3" json:"publishers,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TopicKind) Reset() {
+	*x = TopicKind{}
+	mi := &file_hub_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TopicKind) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TopicKind) ProtoMessage() {}
+
+func (x *TopicKind) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TopicKind.ProtoReflect.Descriptor instead.
+func (*TopicKind) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TopicKind) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *TopicKind) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *TopicKind) GetPublishers() []string {
+	if x != nil {
+		return x.Publishers
+	}
+	return nil
+}
+
+type GroupRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	Group         string                 `protobuf:"bytes,2,opt,name=group,proto3" json:"group,omitempty"`
+	Theme         string                 `protobuf:"bytes,3,opt,name=theme,proto3" json:"theme,omitempty"`
+	Members       []string               `protobuf:"bytes,4,rep,name=members,proto3" json:"members,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GroupRequest) Reset() {
+	*x = GroupRequest{}
+	mi := &file_hub_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupRequest) ProtoMessage() {}
+
+func (x *GroupRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupRequest.ProtoReflect.Descriptor instead.
+func (*GroupRequest) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GroupRequest) GetSession() string {
+	if x != nil {
+		return x.Session
+	}
+	return ""
+}
+
+func (x *GroupRequest) GetGroup() string {
+	if x != nil {
+		return x.Group
+	}
+	return ""
+}
+
+func (x *GroupRequest) GetTheme() string {
+	if x != nil {
+		return x.Theme
+	}
+	return ""
+}
+
+func (x *GroupRequest) GetMembers() []string {
+	if x != nil {
+		return x.Members
+	}
+	return nil
+}
+
+type MemberRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	Group         string                 `protobuf:"bytes,2,opt,name=group,proto3" json:"group,omitempty"`
+	Member        string                 `protobuf:"bytes,3,opt,name=member,proto3" json:"member,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MemberRequest) Reset() {
+	*x = MemberRequest{}
+	mi := &file_hub_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MemberRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MemberRequest) ProtoMessage() {}
+
+func (x *MemberRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MemberRequest.ProtoReflect.Descriptor instead.
+func (*MemberRequest) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *MemberRequest) GetSession() string {
+	if x != nil {
+		return x.Session
+	}
+	return ""
+}
+
+func (x *MemberRequest) GetGroup() string {
+	if x != nil {
+		return x.Group
+	}
+	return ""
+}
+
+func (x *MemberRequest) GetMember() string {
+	if x != nil {
+		return x.Member
+	}
+	return ""
+}
+
+type TypingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	Stopped       bool                   `protobuf:"varint,2,opt,name=stopped,proto3" json:"stopped,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TypingRequest) Reset() {
+	*x = TypingRequest{}
+	mi := &file_hub_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TypingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TypingRequest) ProtoMessage() {}
+
+func (x *TypingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TypingRequest.ProtoReflect.Descriptor instead.
+func (*TypingRequest) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *TypingRequest) GetSession() string {
+	if x != nil {
+		return x.Session
+	}
+	return ""
+}
+
+func (x *TypingRequest) GetStopped() bool {
+	if x != nil {
+		return x.Stopped
+	}
+	return false
+}
+
+type Group struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Theme         string                 `protobuf:"bytes,2,opt,name=theme,proto3" json:"theme,omitempty"`
+	Members       []string               `protobuf:"bytes,3,rep,name=members,proto3" json:"members,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Group) Reset() {
+	*x = Group{}
+	mi := &file_hub_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Group) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Group) ProtoMessage() {}
+
+func (x *Group) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Group.ProtoReflect.Descriptor instead.
+func (*Group) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Group) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Group) GetTheme() string {
+	if x != nil {
+		return x.Theme
+	}
+	return ""
+}
+
+func (x *Group) GetMembers() []string {
+	if x != nil {
+		return x.Members
+	}
+	return nil
+}
+
+type GroupList struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Groups        []*Group               `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GroupList) Reset() {
+	*x = GroupList{}
+	mi := &file_hub_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupList) ProtoMessage() {}
+
+func (x *GroupList) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupList.ProtoReflect.Descriptor instead.
+func (*GroupList) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GroupList) GetGroups() []*Group {
+	if x != nil {
+		return x.Groups
+	}
+	return nil
+}
+
+type Contact struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Name   string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Topics []string               `protobuf:"bytes,2,rep,name=topics,proto3" json:"topics,omitempty"`
+	Groups []string               `protobuf:"bytes,3,rep,name=groups,proto3" json:"groups,omitempty"`
+	// typing_until is when it stops showing as typing, in Unix milliseconds; 0 when it is not.
+	TypingUntil int64 `protobuf:"varint,4,opt,name=typing_until,json=typingUntil,proto3" json:"typing_until,omitempty"`
+	// last_seen is in Unix seconds.
+	LastSeen      int64 `protobuf:"varint,5,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Contact) Reset() {
+	*x = Contact{}
+	mi := &file_hub_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Contact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Contact) ProtoMessage() {}
+
+func (x *Contact) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Contact.ProtoReflect.Descriptor instead.
+func (*Contact) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *Contact) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Contact) GetTopics() []string {
+	if x != nil {
+		return x.Topics
+	}
+	return nil
+}
+
+func (x *Contact) GetGroups() []string {
+	if x != nil {
+		return x.Groups
+	}
+	return nil
+}
+
+func (x *Contact) GetTypingUntil() int64 {
+	if x != nil {
+		return x.TypingUntil
+	}
+	return 0
+}
+
+func (x *Contact) GetLastSeen() int64 {
+	if x != nil {
+		return x.LastSeen
+	}
+	return 0
+}
+
+// State is everything a person looking on sees besides the messages, sent whole when it changes.
+type State struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Contacts      []*Contact             `protobuf:"bytes,1,rep,name=contacts,proto3" json:"contacts,omitempty"`
+	Groups        []*Group               `protobuf:"bytes,2,rep,name=groups,proto3" json:"groups,omitempty"`
+	Archived      []string               `protobuf:"bytes,3,rep,name=archived,proto3" json:"archived,omitempty"`
+	Kinds         []*TopicKind           `protobuf:"bytes,4,rep,name=kinds,proto3" json:"kinds,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *State) Reset() {
+	*x = State{}
+	mi := &file_hub_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *State) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*State) ProtoMessage() {}
+
+func (x *State) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use State.ProtoReflect.Descriptor instead.
+func (*State) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *State) GetContacts() []*Contact {
+	if x != nil {
+		return x.Contacts
+	}
+	return nil
+}
+
+func (x *State) GetGroups() []*Group {
+	if x != nil {
+		return x.Groups
+	}
+	return nil
+}
+
+func (x *State) GetArchived() []string {
+	if x != nil {
+		return x.Archived
+	}
+	return nil
+}
+
+func (x *State) GetKinds() []*TopicKind {
+	if x != nil {
+		return x.Kinds
+	}
+	return nil
+}
+
+type Event struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Kind:
+	//
+	//	*Event_Message
+	//	*Event_State
+	Kind          isEvent_Kind `protobuf_oneof:"kind"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Event) Reset() {
+	*x = Event{}
+	mi := &file_hub_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Event) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Event) ProtoMessage() {}
+
+func (x *Event) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Event.ProtoReflect.Descriptor instead.
+func (*Event) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *Event) GetKind() isEvent_Kind {
+	if x != nil {
+		return x.Kind
+	}
+	return nil
+}
+
+func (x *Event) GetMessage() *Message {
+	if x != nil {
+		if x, ok := x.Kind.(*Event_Message); ok {
+			return x.Message
+		}
+	}
+	return nil
+}
+
+func (x *Event) GetState() *State {
+	if x != nil {
+		if x, ok := x.Kind.(*Event_State); ok {
+			return x.State
+		}
+	}
+	return nil
+}
+
+type isEvent_Kind interface {
+	isEvent_Kind()
+}
+
+type Event_Message struct {
+	Message *Message `protobuf:"bytes,1,opt,name=message,proto3,oneof"`
+}
+
+type Event_State struct {
+	State *State `protobuf:"bytes,2,opt,name=state,proto3,oneof"`
+}
+
+func (*Event_Message) isEvent_Kind() {}
+
+func (*Event_State) isEvent_Kind() {}
+
+type WatchRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// past starts with every message the hub holds, oldest first.
+	Past          bool `protobuf:"varint,1,opt,name=past,proto3" json:"past,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchRequest) Reset() {
+	*x = WatchRequest{}
+	mi := &file_hub_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchRequest) ProtoMessage() {}
+
+func (x *WatchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hub_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchRequest.ProtoReflect.Descriptor instead.
+func (*WatchRequest) Descriptor() ([]byte, []int) {
+	return file_hub_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *WatchRequest) GetPast() bool {
+	if x != nil {
+		return x.Past
+	}
+	return false
+}
+
 type SessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
@@ -34,7 +713,7 @@ type SessionRequest struct {
 
 func (x *SessionRequest) Reset() {
 	*x = SessionRequest{}
-	mi := &file_hub_proto_msgTypes[0]
+	mi := &file_hub_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +725,7 @@ func (x *SessionRequest) String() string {
 func (*SessionRequest) ProtoMessage() {}
 
 func (x *SessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[0]
+	mi := &file_hub_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +738,7 @@ func (x *SessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionRequest.ProtoReflect.Descriptor instead.
 func (*SessionRequest) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{0}
+	return file_hub_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SessionRequest) GetSession() string {
@@ -79,7 +758,7 @@ type TopicRequest struct {
 
 func (x *TopicRequest) Reset() {
 	*x = TopicRequest{}
-	mi := &file_hub_proto_msgTypes[1]
+	mi := &file_hub_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -91,7 +770,7 @@ func (x *TopicRequest) String() string {
 func (*TopicRequest) ProtoMessage() {}
 
 func (x *TopicRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[1]
+	mi := &file_hub_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +783,7 @@ func (x *TopicRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopicRequest.ProtoReflect.Descriptor instead.
 func (*TopicRequest) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{1}
+	return file_hub_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *TopicRequest) GetSession() string {
@@ -133,7 +812,7 @@ type ListenRequest struct {
 
 func (x *ListenRequest) Reset() {
 	*x = ListenRequest{}
-	mi := &file_hub_proto_msgTypes[2]
+	mi := &file_hub_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -145,7 +824,7 @@ func (x *ListenRequest) String() string {
 func (*ListenRequest) ProtoMessage() {}
 
 func (x *ListenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[2]
+	mi := &file_hub_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -158,7 +837,7 @@ func (x *ListenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListenRequest.ProtoReflect.Descriptor instead.
 func (*ListenRequest) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{2}
+	return file_hub_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListenRequest) GetSession() string {
@@ -193,7 +872,7 @@ type PublishRequest struct {
 
 func (x *PublishRequest) Reset() {
 	*x = PublishRequest{}
-	mi := &file_hub_proto_msgTypes[3]
+	mi := &file_hub_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -205,7 +884,7 @@ func (x *PublishRequest) String() string {
 func (*PublishRequest) ProtoMessage() {}
 
 func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[3]
+	mi := &file_hub_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -218,7 +897,7 @@ func (x *PublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
 func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{3}
+	return file_hub_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PublishRequest) GetSession() string {
@@ -253,7 +932,7 @@ type ReadRequest struct {
 
 func (x *ReadRequest) Reset() {
 	*x = ReadRequest{}
-	mi := &file_hub_proto_msgTypes[4]
+	mi := &file_hub_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -265,7 +944,7 @@ func (x *ReadRequest) String() string {
 func (*ReadRequest) ProtoMessage() {}
 
 func (x *ReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[4]
+	mi := &file_hub_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -278,7 +957,7 @@ func (x *ReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadRequest.ProtoReflect.Descriptor instead.
 func (*ReadRequest) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{4}
+	return file_hub_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ReadRequest) GetSession() string {
@@ -303,7 +982,7 @@ type Done struct {
 
 func (x *Done) Reset() {
 	*x = Done{}
-	mi := &file_hub_proto_msgTypes[5]
+	mi := &file_hub_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -315,7 +994,7 @@ func (x *Done) String() string {
 func (*Done) ProtoMessage() {}
 
 func (x *Done) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[5]
+	mi := &file_hub_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -328,7 +1007,7 @@ func (x *Done) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Done.ProtoReflect.Descriptor instead.
 func (*Done) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{5}
+	return file_hub_proto_rawDescGZIP(), []int{16}
 }
 
 type Session struct {
@@ -341,7 +1020,7 @@ type Session struct {
 
 func (x *Session) Reset() {
 	*x = Session{}
-	mi := &file_hub_proto_msgTypes[6]
+	mi := &file_hub_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -353,7 +1032,7 @@ func (x *Session) String() string {
 func (*Session) ProtoMessage() {}
 
 func (x *Session) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[6]
+	mi := &file_hub_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -366,7 +1045,7 @@ func (x *Session) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Session.ProtoReflect.Descriptor instead.
 func (*Session) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{6}
+	return file_hub_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Session) GetName() string {
@@ -392,7 +1071,7 @@ type SessionList struct {
 
 func (x *SessionList) Reset() {
 	*x = SessionList{}
-	mi := &file_hub_proto_msgTypes[7]
+	mi := &file_hub_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -404,7 +1083,7 @@ func (x *SessionList) String() string {
 func (*SessionList) ProtoMessage() {}
 
 func (x *SessionList) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[7]
+	mi := &file_hub_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +1096,7 @@ func (x *SessionList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionList.ProtoReflect.Descriptor instead.
 func (*SessionList) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{7}
+	return file_hub_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SessionList) GetSessions() []*Session {
@@ -441,7 +1120,7 @@ type Message struct {
 
 func (x *Message) Reset() {
 	*x = Message{}
-	mi := &file_hub_proto_msgTypes[8]
+	mi := &file_hub_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -453,7 +1132,7 @@ func (x *Message) String() string {
 func (*Message) ProtoMessage() {}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[8]
+	mi := &file_hub_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -466,7 +1145,7 @@ func (x *Message) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Message.ProtoReflect.Descriptor instead.
 func (*Message) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{8}
+	return file_hub_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Message) GetNumber() uint64 {
@@ -513,7 +1192,7 @@ type MessageList struct {
 
 func (x *MessageList) Reset() {
 	*x = MessageList{}
-	mi := &file_hub_proto_msgTypes[9]
+	mi := &file_hub_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -525,7 +1204,7 @@ func (x *MessageList) String() string {
 func (*MessageList) ProtoMessage() {}
 
 func (x *MessageList) ProtoReflect() protoreflect.Message {
-	mi := &file_hub_proto_msgTypes[9]
+	mi := &file_hub_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -538,7 +1217,7 @@ func (x *MessageList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageList.ProtoReflect.Descriptor instead.
 func (*MessageList) Descriptor() ([]byte, []int) {
-	return file_hub_proto_rawDescGZIP(), []int{9}
+	return file_hub_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *MessageList) GetMessages() []*Message {
@@ -552,7 +1231,52 @@ var File_hub_proto protoreflect.FileDescriptor
 
 const file_hub_proto_rawDesc = "" +
 	"\n" +
-	"\thub.proto\x12\x05llmcp\"*\n" +
+	"\thub.proto\x12\x05llmcp\"Q\n" +
+	"\vKindRequest\x12\x18\n" +
+	"\asession\x18\x01 \x01(\tR\asession\x12\x14\n" +
+	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x12\n" +
+	"\x04kind\x18\x03 \x01(\tR\x04kind\"U\n" +
+	"\tTopicKind\x12\x14\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x12\n" +
+	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x1e\n" +
+	"\n" +
+	"publishers\x18\x03 \x03(\tR\n" +
+	"publishers\"n\n" +
+	"\fGroupRequest\x12\x18\n" +
+	"\asession\x18\x01 \x01(\tR\asession\x12\x14\n" +
+	"\x05group\x18\x02 \x01(\tR\x05group\x12\x14\n" +
+	"\x05theme\x18\x03 \x01(\tR\x05theme\x12\x18\n" +
+	"\amembers\x18\x04 \x03(\tR\amembers\"W\n" +
+	"\rMemberRequest\x12\x18\n" +
+	"\asession\x18\x01 \x01(\tR\asession\x12\x14\n" +
+	"\x05group\x18\x02 \x01(\tR\x05group\x12\x16\n" +
+	"\x06member\x18\x03 \x01(\tR\x06member\"C\n" +
+	"\rTypingRequest\x12\x18\n" +
+	"\asession\x18\x01 \x01(\tR\asession\x12\x18\n" +
+	"\astopped\x18\x02 \x01(\bR\astopped\"K\n" +
+	"\x05Group\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05theme\x18\x02 \x01(\tR\x05theme\x12\x18\n" +
+	"\amembers\x18\x03 \x03(\tR\amembers\"1\n" +
+	"\tGroupList\x12$\n" +
+	"\x06groups\x18\x01 \x03(\v2\f.llmcp.GroupR\x06groups\"\x8d\x01\n" +
+	"\aContact\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
+	"\x06topics\x18\x02 \x03(\tR\x06topics\x12\x16\n" +
+	"\x06groups\x18\x03 \x03(\tR\x06groups\x12!\n" +
+	"\ftyping_until\x18\x04 \x01(\x03R\vtypingUntil\x12\x1b\n" +
+	"\tlast_seen\x18\x05 \x01(\x03R\blastSeen\"\x9d\x01\n" +
+	"\x05State\x12*\n" +
+	"\bcontacts\x18\x01 \x03(\v2\x0e.llmcp.ContactR\bcontacts\x12$\n" +
+	"\x06groups\x18\x02 \x03(\v2\f.llmcp.GroupR\x06groups\x12\x1a\n" +
+	"\barchived\x18\x03 \x03(\tR\barchived\x12&\n" +
+	"\x05kinds\x18\x04 \x03(\v2\x10.llmcp.TopicKindR\x05kinds\"a\n" +
+	"\x05Event\x12*\n" +
+	"\amessage\x18\x01 \x01(\v2\x0e.llmcp.MessageH\x00R\amessage\x12$\n" +
+	"\x05state\x18\x02 \x01(\v2\f.llmcp.StateH\x00R\x05stateB\x06\n" +
+	"\x04kind\"\"\n" +
+	"\fWatchRequest\x12\x12\n" +
+	"\x04past\x18\x01 \x01(\bR\x04past\"*\n" +
 	"\x0eSessionRequest\x12\x18\n" +
 	"\asession\x18\x01 \x01(\tR\asession\">\n" +
 	"\fTopicRequest\x12\x18\n" +
@@ -582,7 +1306,7 @@ const file_hub_proto_rawDesc = "" +
 	"\x04text\x18\x04 \x01(\tR\x04text\x12\x1c\n" +
 	"\tpublished\x18\x05 \x01(\x03R\tpublished\"9\n" +
 	"\vMessageList\x12*\n" +
-	"\bmessages\x18\x01 \x03(\v2\x0e.llmcp.MessageR\bmessages2\xd2\x02\n" +
+	"\bmessages\x18\x01 \x03(\v2\x0e.llmcp.MessageR\bmessages2\xdc\x06\n" +
 	"\x03Hub\x12*\n" +
 	"\x04Join\x12\x15.llmcp.SessionRequest\x1a\v.llmcp.Done\x12+\n" +
 	"\x05Leave\x12\x15.llmcp.SessionRequest\x1a\v.llmcp.Done\x125\n" +
@@ -590,7 +1314,18 @@ const file_hub_proto_rawDesc = "" +
 	"\x06Listen\x12\x14.llmcp.ListenRequest\x1a\v.llmcp.Done\x12,\n" +
 	"\bUnlisten\x12\x13.llmcp.TopicRequest\x1a\v.llmcp.Done\x120\n" +
 	"\aPublish\x12\x15.llmcp.PublishRequest\x1a\x0e.llmcp.Message\x12.\n" +
-	"\x04Read\x12\x12.llmcp.ReadRequest\x1a\x12.llmcp.MessageListB$Z\"github.com/akrck02/LLM-CP/protocolb\x06proto3"
+	"\x04Read\x12\x12.llmcp.ReadRequest\x1a\x12.llmcp.MessageList\x12,\n" +
+	"\x05Watch\x12\x13.llmcp.WatchRequest\x1a\f.llmcp.Event0\x01\x12/\n" +
+	"\vCreateGroup\x12\x13.llmcp.GroupRequest\x1a\v.llmcp.Done\x12.\n" +
+	"\tAddMember\x12\x14.llmcp.MemberRequest\x1a\v.llmcp.Done\x121\n" +
+	"\fRemoveMember\x12\x14.llmcp.MemberRequest\x1a\v.llmcp.Done\x12/\n" +
+	"\vRemoveGroup\x12\x13.llmcp.TopicRequest\x1a\v.llmcp.Done\x121\n" +
+	"\x06Groups\x12\x15.llmcp.SessionRequest\x1a\x10.llmcp.GroupList\x12+\n" +
+	"\aArchive\x12\x13.llmcp.TopicRequest\x1a\v.llmcp.Done\x12+\n" +
+	"\aRestore\x12\x13.llmcp.TopicRequest\x1a\v.llmcp.Done\x12+\n" +
+	"\x06Typing\x12\x14.llmcp.TypingRequest\x1a\v.llmcp.Done\x12*\n" +
+	"\aDeclare\x12\x12.llmcp.KindRequest\x1a\v.llmcp.Done\x12/\n" +
+	"\vRemoveTopic\x12\x13.llmcp.TopicRequest\x1a\v.llmcp.DoneB$Z\"github.com/akrck02/LLM-CP/protocolb\x06proto3"
 
 var (
 	file_hub_proto_rawDescOnce sync.Once
@@ -604,41 +1339,80 @@ func file_hub_proto_rawDescGZIP() []byte {
 	return file_hub_proto_rawDescData
 }
 
-var file_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_hub_proto_goTypes = []any{
-	(*SessionRequest)(nil), // 0: llmcp.SessionRequest
-	(*TopicRequest)(nil),   // 1: llmcp.TopicRequest
-	(*ListenRequest)(nil),  // 2: llmcp.ListenRequest
-	(*PublishRequest)(nil), // 3: llmcp.PublishRequest
-	(*ReadRequest)(nil),    // 4: llmcp.ReadRequest
-	(*Done)(nil),           // 5: llmcp.Done
-	(*Session)(nil),        // 6: llmcp.Session
-	(*SessionList)(nil),    // 7: llmcp.SessionList
-	(*Message)(nil),        // 8: llmcp.Message
-	(*MessageList)(nil),    // 9: llmcp.MessageList
+	(*KindRequest)(nil),    // 0: llmcp.KindRequest
+	(*TopicKind)(nil),      // 1: llmcp.TopicKind
+	(*GroupRequest)(nil),   // 2: llmcp.GroupRequest
+	(*MemberRequest)(nil),  // 3: llmcp.MemberRequest
+	(*TypingRequest)(nil),  // 4: llmcp.TypingRequest
+	(*Group)(nil),          // 5: llmcp.Group
+	(*GroupList)(nil),      // 6: llmcp.GroupList
+	(*Contact)(nil),        // 7: llmcp.Contact
+	(*State)(nil),          // 8: llmcp.State
+	(*Event)(nil),          // 9: llmcp.Event
+	(*WatchRequest)(nil),   // 10: llmcp.WatchRequest
+	(*SessionRequest)(nil), // 11: llmcp.SessionRequest
+	(*TopicRequest)(nil),   // 12: llmcp.TopicRequest
+	(*ListenRequest)(nil),  // 13: llmcp.ListenRequest
+	(*PublishRequest)(nil), // 14: llmcp.PublishRequest
+	(*ReadRequest)(nil),    // 15: llmcp.ReadRequest
+	(*Done)(nil),           // 16: llmcp.Done
+	(*Session)(nil),        // 17: llmcp.Session
+	(*SessionList)(nil),    // 18: llmcp.SessionList
+	(*Message)(nil),        // 19: llmcp.Message
+	(*MessageList)(nil),    // 20: llmcp.MessageList
 }
 var file_hub_proto_depIdxs = []int32{
-	6, // 0: llmcp.SessionList.sessions:type_name -> llmcp.Session
-	8, // 1: llmcp.MessageList.messages:type_name -> llmcp.Message
-	0, // 2: llmcp.Hub.Join:input_type -> llmcp.SessionRequest
-	0, // 3: llmcp.Hub.Leave:input_type -> llmcp.SessionRequest
-	0, // 4: llmcp.Hub.Sessions:input_type -> llmcp.SessionRequest
-	2, // 5: llmcp.Hub.Listen:input_type -> llmcp.ListenRequest
-	1, // 6: llmcp.Hub.Unlisten:input_type -> llmcp.TopicRequest
-	3, // 7: llmcp.Hub.Publish:input_type -> llmcp.PublishRequest
-	4, // 8: llmcp.Hub.Read:input_type -> llmcp.ReadRequest
-	5, // 9: llmcp.Hub.Join:output_type -> llmcp.Done
-	5, // 10: llmcp.Hub.Leave:output_type -> llmcp.Done
-	7, // 11: llmcp.Hub.Sessions:output_type -> llmcp.SessionList
-	5, // 12: llmcp.Hub.Listen:output_type -> llmcp.Done
-	5, // 13: llmcp.Hub.Unlisten:output_type -> llmcp.Done
-	8, // 14: llmcp.Hub.Publish:output_type -> llmcp.Message
-	9, // 15: llmcp.Hub.Read:output_type -> llmcp.MessageList
-	9, // [9:16] is the sub-list for method output_type
-	2, // [2:9] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	5,  // 0: llmcp.GroupList.groups:type_name -> llmcp.Group
+	7,  // 1: llmcp.State.contacts:type_name -> llmcp.Contact
+	5,  // 2: llmcp.State.groups:type_name -> llmcp.Group
+	1,  // 3: llmcp.State.kinds:type_name -> llmcp.TopicKind
+	19, // 4: llmcp.Event.message:type_name -> llmcp.Message
+	8,  // 5: llmcp.Event.state:type_name -> llmcp.State
+	17, // 6: llmcp.SessionList.sessions:type_name -> llmcp.Session
+	19, // 7: llmcp.MessageList.messages:type_name -> llmcp.Message
+	11, // 8: llmcp.Hub.Join:input_type -> llmcp.SessionRequest
+	11, // 9: llmcp.Hub.Leave:input_type -> llmcp.SessionRequest
+	11, // 10: llmcp.Hub.Sessions:input_type -> llmcp.SessionRequest
+	13, // 11: llmcp.Hub.Listen:input_type -> llmcp.ListenRequest
+	12, // 12: llmcp.Hub.Unlisten:input_type -> llmcp.TopicRequest
+	14, // 13: llmcp.Hub.Publish:input_type -> llmcp.PublishRequest
+	15, // 14: llmcp.Hub.Read:input_type -> llmcp.ReadRequest
+	10, // 15: llmcp.Hub.Watch:input_type -> llmcp.WatchRequest
+	2,  // 16: llmcp.Hub.CreateGroup:input_type -> llmcp.GroupRequest
+	3,  // 17: llmcp.Hub.AddMember:input_type -> llmcp.MemberRequest
+	3,  // 18: llmcp.Hub.RemoveMember:input_type -> llmcp.MemberRequest
+	12, // 19: llmcp.Hub.RemoveGroup:input_type -> llmcp.TopicRequest
+	11, // 20: llmcp.Hub.Groups:input_type -> llmcp.SessionRequest
+	12, // 21: llmcp.Hub.Archive:input_type -> llmcp.TopicRequest
+	12, // 22: llmcp.Hub.Restore:input_type -> llmcp.TopicRequest
+	4,  // 23: llmcp.Hub.Typing:input_type -> llmcp.TypingRequest
+	0,  // 24: llmcp.Hub.Declare:input_type -> llmcp.KindRequest
+	12, // 25: llmcp.Hub.RemoveTopic:input_type -> llmcp.TopicRequest
+	16, // 26: llmcp.Hub.Join:output_type -> llmcp.Done
+	16, // 27: llmcp.Hub.Leave:output_type -> llmcp.Done
+	18, // 28: llmcp.Hub.Sessions:output_type -> llmcp.SessionList
+	16, // 29: llmcp.Hub.Listen:output_type -> llmcp.Done
+	16, // 30: llmcp.Hub.Unlisten:output_type -> llmcp.Done
+	19, // 31: llmcp.Hub.Publish:output_type -> llmcp.Message
+	20, // 32: llmcp.Hub.Read:output_type -> llmcp.MessageList
+	9,  // 33: llmcp.Hub.Watch:output_type -> llmcp.Event
+	16, // 34: llmcp.Hub.CreateGroup:output_type -> llmcp.Done
+	16, // 35: llmcp.Hub.AddMember:output_type -> llmcp.Done
+	16, // 36: llmcp.Hub.RemoveMember:output_type -> llmcp.Done
+	16, // 37: llmcp.Hub.RemoveGroup:output_type -> llmcp.Done
+	6,  // 38: llmcp.Hub.Groups:output_type -> llmcp.GroupList
+	16, // 39: llmcp.Hub.Archive:output_type -> llmcp.Done
+	16, // 40: llmcp.Hub.Restore:output_type -> llmcp.Done
+	16, // 41: llmcp.Hub.Typing:output_type -> llmcp.Done
+	16, // 42: llmcp.Hub.Declare:output_type -> llmcp.Done
+	16, // 43: llmcp.Hub.RemoveTopic:output_type -> llmcp.Done
+	26, // [26:44] is the sub-list for method output_type
+	8,  // [8:26] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_hub_proto_init() }
@@ -646,13 +1420,17 @@ func file_hub_proto_init() {
 	if File_hub_proto != nil {
 		return
 	}
+	file_hub_proto_msgTypes[9].OneofWrappers = []any{
+		(*Event_Message)(nil),
+		(*Event_State)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hub_proto_rawDesc), len(file_hub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

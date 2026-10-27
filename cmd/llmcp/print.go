@@ -74,6 +74,30 @@ func (answer printer) messages(messages []*protocol.Message) error {
 	return nil
 }
 
+// groups prints one line per group: its name, members and theme.
+func (answer printer) groups(groups []*protocol.Group) error {
+	if answer.json {
+		if groups == nil {
+			groups = []*protocol.Group{}
+		}
+		return answer.encode(groups)
+	}
+	if len(groups) == 0 {
+		_, err := fmt.Fprintln(answer.output, "no groups")
+		return err
+	}
+	for _, group := range groups {
+		line := group.Name + " (" + strings.Join(group.Members, ", ") + ")"
+		if group.Theme != "" {
+			line += ": " + group.Theme
+		}
+		if _, err := fmt.Fprintln(answer.output, line); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // encode writes a value as one line of JSON.
 func (answer printer) encode(value any) error {
 	return json.NewEncoder(answer.output).Encode(value)

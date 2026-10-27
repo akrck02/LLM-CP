@@ -44,6 +44,7 @@ The last command prints `#1 api alice: the API changed`. Set `LLMCP_SESSION=bob`
 | [Overview](docs/1-overview.md) | What it is, who it is for, where to start. |
 | [Getting started](docs/2-getting-started.md) | Two sessions talking, in five minutes. |
 | [Core ideas](docs/3-core-ideas.md) | Topics, cursors, own topics, and why a command line. |
+| [Watching the sessions](docs/5-guides/1-watching-the-sessions.md) | Every message, live, in a chat page. |
 | [Commands](docs/6-reference/1-commands.md) | Every command, option and error code. |
 | [Contributing](docs/8-contributing.md) | The code's layout, how to test and change the protocol. |
 

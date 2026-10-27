@@ -45,6 +45,11 @@ type Hub struct {
 	published    uint64
 	silenceLimit time.Duration
 	now          func() time.Time
+	groups       map[string]*Group
+	archived     map[string]bool
+	kinds        map[string]Kind // the declared topics; the others are conversations
+	watchers     []*Watcher
+	keepPath     string // the file of the declared topics and groups; "" keeps nothing
 }
 
 // session is a joined session: when it was last heard of, and how far it has read each topic.
@@ -52,6 +57,8 @@ type session struct {
 	lastSeen time.Time
 	cursors  map[string]int // topic name → index of the first message not read yet
 	arrived  chan struct{}  // signalled when a message reaches one of its topics
+
+	typingUntil time.Time // it shows as typing until then; zero when it is not
 }
 
 // New makes an empty hub. A session silent for longer than silenceLimit is dropped; now is the
@@ -60,13 +67,17 @@ func New(silenceLimit time.Duration, now func() time.Time) *Hub {
 	return &Hub{
 		sessions:     map[string]*session{},
 		topics:       map[string][]Message{},
+		groups:       map[string]*Group{},
+		archived:     map[string]bool{},
+		kinds:        map[string]Kind{},
 		silenceLimit: silenceLimit,
 		now:          now,
 	}
 }
 
-// Join adds a session with a name, listening to its own topic. Messages sent there while no
-// session had the name are waiting for it; those of an earlier session of that name are gone.
+// Join adds a session with a name, listening to its own topic and to the groups it is in.
+// Messages sent to its topic while no session had the name are waiting for it; those of an
+// earlier session of that name are gone.
 func (hub *Hub) Join(name string) error {
 	if !validName(name) {
 		return failure.Wrap(InvalidName, name, nil)
@@ -77,11 +88,14 @@ func (hub *Hub) Join(name string) error {
 	if _, taken := hub.sessions[name]; taken {
 		return failure.Wrap(NameTaken, name, nil)
 	}
-	hub.sessions[name] = &session{
+	joined := &session{
 		lastSeen: hub.now(),
 		cursors:  map[string]int{OwnTopic(name): 0},
 		arrived:  make(chan struct{}, 1),
 	}
+	hub.sessions[name] = joined
+	hub.listenToGroups(name, joined)
+	hub.stateChanged()
 	return nil
 }
 
@@ -93,6 +107,7 @@ func (hub *Hub) Leave(name string) error {
 		return err
 	}
 	hub.forget(name)
+	hub.stateChanged()
 	return nil
 }
 
@@ -112,12 +127,7 @@ func (hub *Hub) Sessions(asking string) ([]Session, error) {
 	}
 	sessions := make([]Session, 0, len(hub.sessions))
 	for name, joined := range hub.sessions {
-		topics := make([]string, 0, len(joined.cursors))
-		for topic := range joined.cursors {
-			topics = append(topics, topic)
-		}
-		slices.Sort(topics)
-		sessions = append(sessions, Session{Name: name, Topics: topics})
+		sessions = append(sessions, Session{Name: name, Topics: joined.topics()})
 	}
 	slices.SortFunc(sessions, func(first, second Session) int { return strings.Compare(first.Name, second.Name) })
 	return sessions, nil
@@ -145,6 +155,7 @@ func (hub *Hub) Listen(name, topic string, mode Mode) error {
 	if mode == OnlyNew {
 		joined.cursors[topic] = len(hub.topics[topic])
 	}
+	hub.stateChanged()
 	return nil
 }
 
@@ -160,6 +171,7 @@ func (hub *Hub) Unlisten(name, topic string) error {
 		return failure.Wrap(NotListening, topic, nil)
 	}
 	delete(joined.cursors, topic)
+	hub.stateChanged()
 	return nil
 }
 
@@ -173,13 +185,31 @@ func (hub *Hub) Publish(from, topic, text string) (Message, error) {
 	}
 	hub.mutex.Lock()
 	defer hub.mutex.Unlock()
-	if _, err := hub.touch(from); err != nil {
+	sender, err := hub.touch(from)
+	if err != nil {
 		return Message{}, err
 	}
+	if err := hub.mayPublish(from, topic); err != nil {
+		return Message{}, err
+	}
+	newPublisher := false
+	if hub.kindOf(topic) == Metrics {
+		if text, err = asPoint(text, hub.now()); err != nil {
+			return Message{}, err
+		}
+		hub.dropOlderThan(topic, hub.now().Add(-PointsKept).UnixMilli())
+		newPublisher = !slices.ContainsFunc(hub.topics[topic], func(message Message) bool { return message.From == from })
+	}
+	typed := !sender.typingUntil.IsZero() || newPublisher
+	sender.typingUntil = time.Time{} // the answer is out
 	hub.published++
 	message := Message{Number: hub.published, Topic: topic, From: from, Text: text, Published: hub.now()}
 	hub.topics[topic] = append(hub.topics[topic], message)
 	hub.wakeListeners(topic, from)
+	hub.tellWatchers(message)
+	if typed {
+		hub.stateChanged()
+	}
 	return message, nil
 }
 
@@ -211,9 +241,14 @@ func (hub *Hub) touch(name string) (*session, error) {
 // session that ended without leaving frees its name. The caller holds the mutex.
 func (hub *Hub) dropSilentSessions() {
 	now := hub.now()
+	dropped := false
 	for name, joined := range hub.sessions {
 		if now.Sub(joined.lastSeen) > hub.silenceLimit {
 			hub.forget(name)
+			dropped = true
 		}
+	}
+	if dropped {
+		hub.stateChanged()
 	}
 }

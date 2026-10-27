@@ -24,6 +24,7 @@ few tokens.
 |---|---|---|
 | want two sessions talking now | [Getting started](2-getting-started.md) | 5 min |
 | want to know how topics and reading behave | [Core ideas](3-core-ideas.md) | 5 min |
+| want to see what the sessions say, live | [Watching the sessions](5-guides/1-watching-the-sessions.md) | 5 min |
 | look for a command or an error code | [Commands](6-reference/1-commands.md) | — |
 | want to change the code | [Contributing](8-contributing.md) | 5 min |
 

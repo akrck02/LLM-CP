@@ -23,13 +23,24 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Hub_Join_FullMethodName     = "/llmcp.Hub/Join"
-	Hub_Leave_FullMethodName    = "/llmcp.Hub/Leave"
-	Hub_Sessions_FullMethodName = "/llmcp.Hub/Sessions"
-	Hub_Listen_FullMethodName   = "/llmcp.Hub/Listen"
-	Hub_Unlisten_FullMethodName = "/llmcp.Hub/Unlisten"
-	Hub_Publish_FullMethodName  = "/llmcp.Hub/Publish"
-	Hub_Read_FullMethodName     = "/llmcp.Hub/Read"
+	Hub_Join_FullMethodName         = "/llmcp.Hub/Join"
+	Hub_Leave_FullMethodName        = "/llmcp.Hub/Leave"
+	Hub_Sessions_FullMethodName     = "/llmcp.Hub/Sessions"
+	Hub_Listen_FullMethodName       = "/llmcp.Hub/Listen"
+	Hub_Unlisten_FullMethodName     = "/llmcp.Hub/Unlisten"
+	Hub_Publish_FullMethodName      = "/llmcp.Hub/Publish"
+	Hub_Read_FullMethodName         = "/llmcp.Hub/Read"
+	Hub_Watch_FullMethodName        = "/llmcp.Hub/Watch"
+	Hub_CreateGroup_FullMethodName  = "/llmcp.Hub/CreateGroup"
+	Hub_AddMember_FullMethodName    = "/llmcp.Hub/AddMember"
+	Hub_RemoveMember_FullMethodName = "/llmcp.Hub/RemoveMember"
+	Hub_RemoveGroup_FullMethodName  = "/llmcp.Hub/RemoveGroup"
+	Hub_Groups_FullMethodName       = "/llmcp.Hub/Groups"
+	Hub_Archive_FullMethodName      = "/llmcp.Hub/Archive"
+	Hub_Restore_FullMethodName      = "/llmcp.Hub/Restore"
+	Hub_Typing_FullMethodName       = "/llmcp.Hub/Typing"
+	Hub_Declare_FullMethodName      = "/llmcp.Hub/Declare"
+	Hub_RemoveTopic_FullMethodName  = "/llmcp.Hub/RemoveTopic"
 )
 
 // HubClient is the client API for Hub service.
@@ -52,6 +63,29 @@ type HubClient interface {
 	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*Message, error)
 	// Read gives the messages waiting for a session, waiting for one if asked to.
 	Read(ctx context.Context, in *ReadRequest, opts ...grpc.CallOption) (*MessageList, error)
+	// Watch streams every message published to any topic, own topics included, and the hub's
+	// state each time it changes, for a person looking on. Its first event is the state. It needs
+	// no session: whoever can open the socket may watch.
+	Watch(ctx context.Context, in *WatchRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Event], error)
+	// CreateGroup makes a group: a topic with a theme and chosen members, who listen to it.
+	CreateGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Done, error)
+	// AddMember adds a session to a group.
+	AddMember(ctx context.Context, in *MemberRequest, opts ...grpc.CallOption) (*Done, error)
+	// RemoveMember takes a session out of a group.
+	RemoveMember(ctx context.Context, in *MemberRequest, opts ...grpc.CallOption) (*Done, error)
+	// RemoveGroup turns a group back into a plain topic.
+	RemoveGroup(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error)
+	// Groups lists every group with its theme and members.
+	Groups(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GroupList, error)
+	// Archive keeps a topic out of the list of chats; Restore brings it back.
+	Archive(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error)
+	Restore(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error)
+	// Typing says a session started (or, with stopped, ended) thinking of an answer.
+	Typing(ctx context.Context, in *TypingRequest, opts ...grpc.CallOption) (*Done, error)
+	// Declare gives a topic its kind ("conversation" or "metrics") for its whole life.
+	Declare(ctx context.Context, in *KindRequest, opts ...grpc.CallOption) (*Done, error)
+	// RemoveTopic deletes a topic: its messages, its kind and every place in it.
+	RemoveTopic(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error)
 }
 
 type hubClient struct {
@@ -132,6 +166,125 @@ func (c *hubClient) Read(ctx context.Context, in *ReadRequest, opts ...grpc.Call
 	return out, nil
 }
 
+func (c *hubClient) Watch(ctx context.Context, in *WatchRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Event], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Hub_ServiceDesc.Streams[0], Hub_Watch_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[WatchRequest, Event]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Hub_WatchClient = grpc.ServerStreamingClient[Event]
+
+func (c *hubClient) CreateGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_CreateGroup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) AddMember(ctx context.Context, in *MemberRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_AddMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) RemoveMember(ctx context.Context, in *MemberRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_RemoveMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) RemoveGroup(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_RemoveGroup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) Groups(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GroupList, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GroupList)
+	err := c.cc.Invoke(ctx, Hub_Groups_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) Archive(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_Archive_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) Restore(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_Restore_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) Typing(ctx context.Context, in *TypingRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_Typing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) Declare(ctx context.Context, in *KindRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_Declare_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) RemoveTopic(ctx context.Context, in *TopicRequest, opts ...grpc.CallOption) (*Done, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Done)
+	err := c.cc.Invoke(ctx, Hub_RemoveTopic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HubServer is the server API for Hub service.
 // All implementations must embed UnimplementedHubServer
 // for forward compatibility.
@@ -152,6 +305,29 @@ type HubServer interface {
 	Publish(context.Context, *PublishRequest) (*Message, error)
 	// Read gives the messages waiting for a session, waiting for one if asked to.
 	Read(context.Context, *ReadRequest) (*MessageList, error)
+	// Watch streams every message published to any topic, own topics included, and the hub's
+	// state each time it changes, for a person looking on. Its first event is the state. It needs
+	// no session: whoever can open the socket may watch.
+	Watch(*WatchRequest, grpc.ServerStreamingServer[Event]) error
+	// CreateGroup makes a group: a topic with a theme and chosen members, who listen to it.
+	CreateGroup(context.Context, *GroupRequest) (*Done, error)
+	// AddMember adds a session to a group.
+	AddMember(context.Context, *MemberRequest) (*Done, error)
+	// RemoveMember takes a session out of a group.
+	RemoveMember(context.Context, *MemberRequest) (*Done, error)
+	// RemoveGroup turns a group back into a plain topic.
+	RemoveGroup(context.Context, *TopicRequest) (*Done, error)
+	// Groups lists every group with its theme and members.
+	Groups(context.Context, *SessionRequest) (*GroupList, error)
+	// Archive keeps a topic out of the list of chats; Restore brings it back.
+	Archive(context.Context, *TopicRequest) (*Done, error)
+	Restore(context.Context, *TopicRequest) (*Done, error)
+	// Typing says a session started (or, with stopped, ended) thinking of an answer.
+	Typing(context.Context, *TypingRequest) (*Done, error)
+	// Declare gives a topic its kind ("conversation" or "metrics") for its whole life.
+	Declare(context.Context, *KindRequest) (*Done, error)
+	// RemoveTopic deletes a topic: its messages, its kind and every place in it.
+	RemoveTopic(context.Context, *TopicRequest) (*Done, error)
 	mustEmbedUnimplementedHubServer()
 }
 
@@ -182,6 +358,39 @@ func (UnimplementedHubServer) Publish(context.Context, *PublishRequest) (*Messag
 }
 func (UnimplementedHubServer) Read(context.Context, *ReadRequest) (*MessageList, error) {
 	return nil, status.Error(codes.Unimplemented, "method Read not implemented")
+}
+func (UnimplementedHubServer) Watch(*WatchRequest, grpc.ServerStreamingServer[Event]) error {
+	return status.Error(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedHubServer) CreateGroup(context.Context, *GroupRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateGroup not implemented")
+}
+func (UnimplementedHubServer) AddMember(context.Context, *MemberRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddMember not implemented")
+}
+func (UnimplementedHubServer) RemoveMember(context.Context, *MemberRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveMember not implemented")
+}
+func (UnimplementedHubServer) RemoveGroup(context.Context, *TopicRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveGroup not implemented")
+}
+func (UnimplementedHubServer) Groups(context.Context, *SessionRequest) (*GroupList, error) {
+	return nil, status.Error(codes.Unimplemented, "method Groups not implemented")
+}
+func (UnimplementedHubServer) Archive(context.Context, *TopicRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method Archive not implemented")
+}
+func (UnimplementedHubServer) Restore(context.Context, *TopicRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method Restore not implemented")
+}
+func (UnimplementedHubServer) Typing(context.Context, *TypingRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method Typing not implemented")
+}
+func (UnimplementedHubServer) Declare(context.Context, *KindRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method Declare not implemented")
+}
+func (UnimplementedHubServer) RemoveTopic(context.Context, *TopicRequest) (*Done, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveTopic not implemented")
 }
 func (UnimplementedHubServer) mustEmbedUnimplementedHubServer() {}
 func (UnimplementedHubServer) testEmbeddedByValue()             {}
@@ -330,6 +539,197 @@ func _Hub_Read_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Hub_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(HubServer).Watch(m, &grpc.GenericServerStream[WatchRequest, Event]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Hub_WatchServer = grpc.ServerStreamingServer[Event]
+
+func _Hub_CreateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).CreateGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_CreateGroup_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).CreateGroup(ctx, req.(*GroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_AddMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).AddMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_AddMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).AddMember(ctx, req.(*MemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_RemoveMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).RemoveMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_RemoveMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).RemoveMember(ctx, req.(*MemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_RemoveGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).RemoveGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_RemoveGroup_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).RemoveGroup(ctx, req.(*TopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_Groups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).Groups(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_Groups_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).Groups(ctx, req.(*SessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_Archive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).Archive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_Archive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).Archive(ctx, req.(*TopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_Restore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).Restore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_Restore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).Restore(ctx, req.(*TopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_Typing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TypingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).Typing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_Typing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).Typing(ctx, req.(*TypingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_Declare_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KindRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).Declare(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_Declare_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).Declare(ctx, req.(*KindRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_RemoveTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).RemoveTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hub_RemoveTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).RemoveTopic(ctx, req.(*TopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Hub_ServiceDesc is the grpc.ServiceDesc for Hub service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -365,7 +765,53 @@ var Hub_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Read",
 			Handler:    _Hub_Read_Handler,
 		},
+		{
+			MethodName: "CreateGroup",
+			Handler:    _Hub_CreateGroup_Handler,
+		},
+		{
+			MethodName: "AddMember",
+			Handler:    _Hub_AddMember_Handler,
+		},
+		{
+			MethodName: "RemoveMember",
+			Handler:    _Hub_RemoveMember_Handler,
+		},
+		{
+			MethodName: "RemoveGroup",
+			Handler:    _Hub_RemoveGroup_Handler,
+		},
+		{
+			MethodName: "Groups",
+			Handler:    _Hub_Groups_Handler,
+		},
+		{
+			MethodName: "Archive",
+			Handler:    _Hub_Archive_Handler,
+		},
+		{
+			MethodName: "Restore",
+			Handler:    _Hub_Restore_Handler,
+		},
+		{
+			MethodName: "Typing",
+			Handler:    _Hub_Typing_Handler,
+		},
+		{
+			MethodName: "Declare",
+			Handler:    _Hub_Declare_Handler,
+		},
+		{
+			MethodName: "RemoveTopic",
+			Handler:    _Hub_RemoveTopic_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Watch",
+			Handler:       _Hub_Watch_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "hub.proto",
 }
