@@ -1,6 +1,6 @@
 # 6. The chat shows the topics you are subscribed to
 
-> Status: planned · Author's approval: proposal ☑ (2026-10-27, with the answers below) plan ☑ (2026-10-27)
+> Status: built, waits for review · Author's approval: proposal ☑ (2026-10-27, with the answers below) plan ☑ (2026-10-27)
 
 ## Why
 
@@ -74,18 +74,18 @@ them (R4).
 
 ## Tasks
 
-- [ ] T1 — The subscriptions store: per-name topics, kept in a file, read again on start ·
+- [x] T1 — The subscriptions store: per-name topics, kept in a file, read again on start ·
   `chat/cmd/llmcp-chat/subscriptions.go` and its test · serves R5, R6, R7 · tests: `a subscription
   is kept across a restart of the server`, `a new name has no subscriptions`
-- [ ] T2 — The `/subscriptions` endpoint and listening again after a rejoin · `subscriptions.go`,
+- [x] T2 — The `/subscriptions` endpoint and listening again after a rejoin · `subscriptions.go`,
   `actions.go` (`withClient`), `main.go` (the route) · serves R2, R4, R5 · tests on an in-process
   hub, as `publish_test.go` does: `subscribing makes the person listen on the hub`, `after a
   silence the person listens to their topics again`
-- [ ] T3 — `conversation.Log` splits the topics: subscribed and groups in Topics, the rest in
+- [x] T3 — `conversation.Log` splits the topics: subscribed and groups in Topics, the rest in
   "More topics"; the inbox always shows · `chat/conversation/conversation.go` and its test ·
   serves R1, R3, R7 · tests: `only subscribed topics and groups are listed`, `the other topics are
   more topics`
-- [ ] T4 — Page and app: fetch the subscriptions at start, the header's subscribe button, the
+- [x] T4 — Page and app: fetch the subscriptions at start, the header's subscribe button, the
   "More topics" list · `chat/cmd/chat/sections.go`, `draw.go`, `page_web.go`, `page_native.go` ·
   serves R2, R3, R6 · check: in headless Chromium, subscribe, unsubscribe, reload, the list stays
 - [ ] T5 — Docs: what subscribing means in the chat, and the endpoint · `docs/5-guides/
@@ -96,4 +96,19 @@ person's subscriptions. Until then the chat lists everything, as today.
 
 ## Result
 
-*Filled at the end.*
+Built on `feature/chat-subscriptions`, not pushed; AI-written, pending human review.
+
+- The server keeps the subscriptions in `subscriptions.json` (option `-subscriptions`), with two
+  error codes of its own, `chat.subscriptions-unreadable` and `chat.subscriptions-unwritable`.
+- `/subscriptions`: `GET ?as=` gives the list (`[]` for someone new) and listens again on the hub;
+  `POST {as, topic, subscribed}` changes one, on the hub first and then in the file.
+- The split of topics lives in `chat/conversation/subscriptions.go` rather than
+  `conversation.go`: it is a part of its own.
+- The header's button shows what a click does: `bell-plus` to subscribe, `bell-minus` to stop.
+  Inboxes and the groups the person is in have none. "More topics" uses `compass`.
+- Checked in headless Chromium on a private hub: a new name sees no topics; subscribing from More
+  topics and from the header lists the topic and makes the session listen; a reload keeps it;
+  unsubscribing takes it away, from the file and from the hub.
+- Not checked: the Android app (no device), and other browsers.
+- Known: when the first message to arrive is in a topic the person does not follow, it still
+  opens as the first chat, as before.
