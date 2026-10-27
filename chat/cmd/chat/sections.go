@@ -11,8 +11,8 @@ import (
 	"github.com/akrck02/LLM-CP/chat/conversation"
 )
 
-// section is what the side pane shows: the chats, the groups, the contacts, the settings, or the
-// archived chats.
+// section is what the side pane shows: the chats, the groups, the contacts, the settings, the
+// archived chats, or the topics the person does not follow.
 type section int
 
 const (
@@ -23,6 +23,8 @@ const (
 	// archivedSection has no tab: it opens from a row at the top of the chats, as it is visited
 	// rarely and should not take a place beside them
 	archivedSection
+	// moreTopicsSection has no tab either: it opens from a row at the top of the topics
+	moreTopicsSection
 )
 
 // sections are the side pane's tabs, in order, with their Lucide icons.
@@ -117,12 +119,15 @@ func (chat *screen) unreadIn(groups bool) int {
 	return total
 }
 
-// chatsOf is the chats not archived that are topics (a group is a topic with chosen members), or
-// that are sessions' inboxes.
+// chatsOf is the chats not archived that are topics the person follows (a group is a topic with
+// chosen members), or that are sessions' inboxes.
 func (chat *screen) chatsOf(topics bool) []*conversation.Chat {
+	if topics {
+		return chat.log.Topics()
+	}
 	var chosen []*conversation.Chat
 	for _, each := range chat.log.Chats() {
-		if each.IsInbox() != topics {
+		if each.IsInbox() {
 			chosen = append(chosen, each)
 		}
 	}
@@ -137,10 +142,13 @@ func (chat *screen) sectionContent(context *ui.Context) {
 			chat.contactList(context)
 		case archivedSection:
 			chat.archivedList(context)
+		case moreTopicsSection:
+			chat.moreTopicsList(context)
 		case settingsSection:
 			chat.settings(context)
 		case topicsSection:
 			chat.archivedEntry(context)
+			chat.moreTopicsEntry(context)
 			chat.chatRows(context, chat.chatsOf(true))
 		default:
 			chat.archivedEntry(context)
@@ -202,17 +210,68 @@ func (chat *screen) archivedEntry(context *ui.Context) {
 	if archived == 0 {
 		return
 	}
+	if entryRow(context, "archive", "Archived", archived) {
+		chat.archivedFrom, chat.section = chat.section, archivedSection
+	}
+}
+
+// moreTopicsEntry is the row at the top of the topics that opens those the person does not
+// follow, when there are any.
+func (chat *screen) moreTopicsEntry(context *ui.Context) {
+	more := len(chat.log.MoreTopics())
+	if more == 0 {
+		return
+	}
+	if entryRow(context, "compass", "More topics", more) {
+		chat.section = moreTopicsSection
+	}
+}
+
+// entryRow is a quiet row that opens a list kept apart: its icon, its name and how many it holds.
+// It tells whether it was clicked.
+func entryRow(context *ui.Context, icon, label string, count int) bool {
 	theme := context.Theme
 	look := ui.Look{Radius: 12}
 	hovered := ui.Look{Fill: theme.Sunken, Radius: 12}
 	layout := ui.Layout{Width: ui.Grow(), Padding: ui.PadXY(10, 8), Gap: 12, AlignY: ui.Center}
-	if context.Clickable("archived entry", layout, ui.Looks{Normal: look, Hovered: hovered, Pressed: hovered}, func() {
-		context.IconSized("archive", theme.IconSize, theme.InkSoft)
-		context.Text("Archived", ui.TextStyle{Weight: draw2d.Bold, Color: theme.InkSoft})
+	return context.Clickable(label+" entry", layout, ui.Looks{Normal: look, Hovered: hovered, Pressed: hovered}, func() {
+		context.IconSized(icon, theme.IconSize, theme.InkSoft)
+		context.Text(label, ui.TextStyle{Weight: draw2d.Bold, Color: theme.InkSoft})
 		context.Spacer()
-		context.Text(strconv.Itoa(archived), ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
-	}) {
-		chat.archivedFrom, chat.section = chat.section, archivedSection
+		context.Text(strconv.Itoa(count), ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
+	})
+}
+
+// moreTopicsList is the topics the person does not follow, each with a button to subscribe.
+// Clicking one opens it to look before choosing.
+func (chat *screen) moreTopicsList(context *ui.Context) {
+	theme := context.Theme
+	if context.FlatIconButton("chevron-left", "Back") {
+		chat.section = topicsSection
+	}
+	more := chat.log.MoreTopics()
+	if len(more) == 0 {
+		context.Box(ui.Layout{Width: ui.Grow(), Padding: ui.Pad(32), AlignX: ui.Center}, func() {
+			context.Text("You follow every topic on the hub.", ui.TextStyle{Color: theme.InkQuiet})
+		})
+		return
+	}
+	for _, each := range more {
+		layout := ui.Layout{Width: ui.Grow(), Padding: ui.PadXY(10, 8), Gap: 12, AlignY: ui.Center}
+		context.Box(layout, func() {
+			if context.Clickable("more "+each.Topic, ui.Layout{Width: ui.Grow(), Gap: 12, AlignY: ui.Center}, rowLooks(theme, each.Topic == chat.open), func() {
+				chat.chatAvatar(context, each.Topic, listAvatar)
+				context.Box(ui.Layout{Direction: ui.Vertical, Width: ui.Grow(), Gap: 2}, func() {
+					context.Text(conversation.Title(each.Topic), ui.TextStyle{Weight: draw2d.Bold})
+					context.Text(strconv.Itoa(len(each.Messages))+" messages", ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
+				})
+			}) {
+				chat.openTopic(each.Topic)
+			}
+			if context.FlatIconButton("bell-plus", "Subscribe") {
+				chat.setSubscribed(each.Topic, true)
+			}
+		})
 	}
 }
 

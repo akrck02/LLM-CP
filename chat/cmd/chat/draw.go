@@ -274,7 +274,8 @@ func (chat *screen) openChat(context *ui.Context, narrow bool) {
 }
 
 // chatHeader names the open chat, says what it is about or who is typing there, shows its
-// members, and offers to archive it; on a narrow screen it starts with a button back to the list.
+// members, and offers to subscribe to it and to archive it; on a narrow screen it starts with a
+// button back to the list.
 func (chat *screen) chatHeader(context *ui.Context, open *conversation.Chat, narrow bool) {
 	theme := context.Theme
 	context.Box(ui.Layout{Width: ui.Grow(), Padding: ui.PadXY(16, 12), Gap: 12, AlignY: ui.Center}, func() {
@@ -309,11 +310,34 @@ func (chat *screen) chatHeader(context *ui.Context, open *conversation.Chat, nar
 		if group := chat.log.Group(open.Topic); group != nil && context.FlatIconButton("users", "") {
 			chat.editMembers(*group)
 		}
+		chat.subscribeButton(context, open)
 		context.Frame(ui.Layout{Width: ui.Fixed(1), Height: ui.Fixed(28)}, ui.Look{Fill: theme.Line}, func() {})
 		if context.FlatIconButton("archive", "") {
 			chat.leaving = open.Topic
 		}
 	})
+}
+
+// subscribeButton subscribes the person to the open topic or unsubscribes them; its icon says
+// what a click does. Inboxes and the groups the person is in are always followed, so they have none.
+func (chat *screen) subscribeButton(context *ui.Context, open *conversation.Chat) {
+	if open.IsInbox() || chat.isMemberOf(open.Topic) {
+		return
+	}
+	subscribed := slices.Contains(chat.log.Subscriptions(), open.Topic)
+	icon := "bell-plus"
+	if subscribed {
+		icon = "bell-minus"
+	}
+	if context.FlatIconButton(icon, "") {
+		chat.setSubscribed(open.Topic, !subscribed)
+	}
+}
+
+// isMemberOf tells whether the person is a member of a topic's group; false when it is not one.
+func (chat *screen) isMemberOf(topic string) bool {
+	group := chat.log.Group(topic)
+	return group != nil && slices.Contains(group.Members, chat.me)
 }
 
 // kindOf says what a chat is: a group, a session's inbox or a plain topic.

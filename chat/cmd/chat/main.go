@@ -120,6 +120,22 @@ func (chat *screen) receiveState(state conversation.State) {
 	window.Wake()
 }
 
+// receiveSubscriptions takes the topics the person is subscribed to, as the server keeps them;
+// from then on the Topics tab lists only those.
+func (chat *screen) receiveSubscriptions(topics []string) {
+	chat.mutex.Lock()
+	chat.log.SetSubscriptions(chat.me, topics)
+	chat.mutex.Unlock()
+	window.Wake()
+}
+
+// setSubscribed subscribes the person to a topic or unsubscribes them, showing it at once,
+// without waiting for the server.
+func (chat *screen) setSubscribed(topic string, subscribed bool) {
+	chat.log.SetSubscriptions(chat.me, chat.log.WithSubscription(topic, subscribed))
+	chat.act("subscriptions", conversation.Action{As: chat.me, Topic: topic, Subscribed: subscribed})
+}
+
 // connected remembers whether the server's events are flowing, for the header to say so.
 func (chat *screen) connected(online bool) {
 	chat.mutex.Lock()

@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"log/slog"
+	"net/url"
 	"syscall/js"
 
 	"github.com/akrck02/bubble"
@@ -25,6 +26,27 @@ func (chat *screen) startLink() {
 	chat.reduceMotion = js.Global().Call("matchMedia", "(prefers-reduced-motion: reduce)").Get("matches").Bool()
 	chat.listenToSystemMode()
 	listenToEvents("events", chat.receive, chat.receiveState, chat.connected)
+	chat.recallSubscriptions()
+}
+
+// recallSubscriptions asks the server which topics the person follows, away from the frame.
+// Until it answers, or if it cannot, every topic is listed.
+func (chat *screen) recallSubscriptions() {
+	if chat.me == "" {
+		return
+	}
+	asked := js.Global().Call("fetch", "subscriptions?as="+url.QueryEscape(chat.me))
+	asked.Call("then", js.FuncOf(func(_ js.Value, arguments []js.Value) any {
+		return arguments[0].Call("text")
+	})).Call("then", js.FuncOf(func(_ js.Value, arguments []js.Value) any {
+		var topics []string
+		if err := json.Unmarshal([]byte(arguments[0].String()), &topics); err != nil {
+			slog.Warn("the server did not give the subscriptions; every topic is listed", "error", err)
+			return nil
+		}
+		chat.receiveSubscriptions(topics)
+		return nil
+	}))
 }
 
 // listenToSystemMode follows the browser's night or day as it changes, while the person has not
@@ -40,8 +62,8 @@ func (chat *screen) listenToSystemMode() {
 	}))
 }
 
-// act asks the server for an action at a path (groups, archive, restore), away from the frame;
-// the hub's next state shows what came of it.
+// act asks the server for an action at a path (groups, archive, restore, subscriptions), away
+// from the frame; the hub's next state shows what came of it.
 func (chat *screen) act(path string, asked conversation.Action) {
 	body, err := json.Marshal(asked)
 	if err != nil {

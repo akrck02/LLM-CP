@@ -87,12 +87,13 @@ func (log *Log) NextTypingEnd(now time.Time) time.Time {
 }
 
 // Action is what a page asks the server to do besides publishing: make a group (Topic is its
-// name), archive a chat or bring it back. As is who asks.
+// name), archive a chat or bring it back, subscribe to a topic or not. As is who asks.
 type Action struct {
-	As      string   `json:"as"`
-	Topic   string   `json:"topic"`
-	Theme   string   `json:"theme,omitempty"`
-	Members []string `json:"members,omitempty"`
+	As         string   `json:"as"`
+	Topic      string   `json:"topic"`
+	Theme      string   `json:"theme,omitempty"`
+	Members    []string `json:"members,omitempty"`
+	Subscribed bool     `json:"subscribed,omitempty"`
 }
 
 // WithArchived is the state with one more topic archived, to show it before the hub says so.

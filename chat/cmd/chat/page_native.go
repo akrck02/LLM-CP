@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -102,6 +103,28 @@ func (chat *screen) connect() {
 	chat.rememberLink()
 	chat.link.following++
 	go chat.followServer(chat.link.server+"/events", chat.link.following)
+	go chat.recallSubscriptions(chat.link.server + "/subscriptions?as=" + url.QueryEscape(chat.me))
+}
+
+// recallSubscriptions asks the server at an address which topics the person follows. Until it
+// answers, or if it cannot, every topic is listed.
+func (chat *screen) recallSubscriptions(address string) {
+	response, err := http.Get(address)
+	if err != nil {
+		slog.Warn("the server did not give the subscriptions; every topic is listed", "error", err)
+		return
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= http.StatusBadRequest {
+		slog.Warn("the server did not give the subscriptions; every topic is listed", "status", response.Status)
+		return
+	}
+	var topics []string
+	if err := json.NewDecoder(response.Body).Decode(&topics); err != nil {
+		slog.Warn("the server did not give the subscriptions; every topic is listed", "error", err)
+		return
+	}
+	chat.receiveSubscriptions(topics)
 }
 
 // composer is the bar to write in the open chat, under its messages.
@@ -172,8 +195,9 @@ func (chat *screen) send() {
 	}()
 }
 
-// act asks the server for an action at a path (groups, archive, restore), away from the frame;
-// the hub's next state shows what came of it, and a failure shows under the bar to write.
+// act asks the server for an action at a path (groups, archive, restore, subscriptions), away
+// from the frame; the hub's next state shows what came of it, and a failure shows under the bar
+// to write.
 func (chat *screen) act(path string, asked conversation.Action) {
 	body, err := json.Marshal(asked)
 	if err != nil {
