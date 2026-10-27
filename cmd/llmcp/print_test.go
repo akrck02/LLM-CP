@@ -65,6 +65,34 @@ func TestAWaitLongerThanTheSilenceLimitIsRefused(test *testing.T) {
 	}
 }
 
+// Pairs come with every conversation between two: listed one by one, they would bury the groups.
+func TestPairsPrintOnOneLineAfterTheGroups(test *testing.T) {
+	output := &strings.Builder{}
+	groups := []*protocol.Group{
+		{Name: "alice+api", Members: []string{"alice", "api"}},
+		{Name: "api", Theme: "the tasks API", Members: []string{"alice", "bob"}},
+		{Name: "api+docs", Members: []string{"api", "docs"}},
+	}
+	if err := newPrinter(output, false).groups(groups); err != nil {
+		test.Fatal(err)
+	}
+	want := "api (alice, bob): the tasks API\npairs: alice+api, api+docs\n"
+	if output.String() != want {
+		test.Fatalf("got %q, want %q", output.String(), want)
+	}
+}
+
+// A message lands in a pair even when written to @name: publish says where it went.
+func TestPublishSaysThePairItLandedIn(test *testing.T) {
+	output := &strings.Builder{}
+	if err := newPrinter(output, false).published(&protocol.Message{Number: 12, Topic: "alice+api"}); err != nil {
+		test.Fatal(err)
+	}
+	if output.String() != "#12 published to alice+api\n" {
+		test.Fatalf("got %q", output.String())
+	}
+}
+
 func TestGroupsPrintOneLineEach(test *testing.T) {
 	output := &strings.Builder{}
 	groups := []*protocol.Group{

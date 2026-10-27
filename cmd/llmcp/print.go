@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/akrck02/LLM-CP/hub"
 	"github.com/akrck02/LLM-CP/protocol"
 )
 
@@ -74,7 +75,8 @@ func (answer printer) messages(messages []*protocol.Message) error {
 	return nil
 }
 
-// groups prints one line per group: its name, members and theme.
+// groups prints one line per group: its name, members and theme; then the pairs, on one line, so
+// they do not crowd the groups chosen on purpose.
 func (answer printer) groups(groups []*protocol.Group) error {
 	if answer.json {
 		if groups == nil {
@@ -86,7 +88,12 @@ func (answer printer) groups(groups []*protocol.Group) error {
 		_, err := fmt.Fprintln(answer.output, "no groups")
 		return err
 	}
+	var pairs []string
 	for _, group := range groups {
+		if hub.IsPair(group.Name) {
+			pairs = append(pairs, group.Name)
+			continue
+		}
 		line := group.Name + " (" + strings.Join(group.Members, ", ") + ")"
 		if group.Theme != "" {
 			line += ": " + group.Theme
@@ -95,7 +102,11 @@ func (answer printer) groups(groups []*protocol.Group) error {
 			return err
 		}
 	}
-	return nil
+	if len(pairs) == 0 {
+		return nil
+	}
+	_, err := fmt.Fprintln(answer.output, "pairs: "+strings.Join(pairs, ", "))
+	return err
 }
 
 // encode writes a value as one line of JSON.
