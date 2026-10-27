@@ -28,6 +28,6 @@ require (
 replace (
 	github.com/akrck02/bubble => ../../bubble
 	github.com/akrck02/bubble/goui => ../../bubble/goui
-	github.com/akrck02/go-renderer => ../../go-renderer
+	github.com/akrck02/go-renderer => ../../go-renderer-browser-emoji
 	github.com/akrck02/go-ui => ../../go-ui-scroll-from-end
 )
