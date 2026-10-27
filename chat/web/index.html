@@ -82,7 +82,14 @@
       left: bounds.left + x + "px", top: bounds.top + y + "px", width: width + "px", height: height + "px",
     });
     document.body.dataset.writing = "";
-    text.placeholder = "Message " + topic.replace(/^@/, "");
+    text.placeholder = "Message " + nameOf(topic);
+  };
+  // nameOf is who or what a topic reaches: a pair ("alice+api") by the other session's name, as
+  // the Go side names it (conversation.Name)
+  const nameOf = (written) => {
+    const [first, second] = written.split("+");
+    if (second === undefined) return written.replace(/^@/, "");
+    return first === window.llmcpName ? second : first;
   };
   window.llmcpFocusBar = () => text.focus();
   // the send button lights up once there is something to send

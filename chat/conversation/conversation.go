@@ -170,7 +170,7 @@ func Title(topic string) string { return strings.TrimPrefix(topic, "@") }
 // Initials are up to two letters that stand for a name in its round picture: "go-docs" is "GD".
 func Initials(name string) string {
 	words := strings.FieldsFunc(strings.TrimPrefix(name, "@"), func(character rune) bool {
-		return strings.ContainsRune("-_./ ", character)
+		return strings.ContainsRune("-_./+ ", character)
 	})
 	initials := ""
 	for _, word := range words {

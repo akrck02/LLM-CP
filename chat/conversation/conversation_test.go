@@ -48,7 +48,7 @@ func TestOpeningAChatMarksItsMessagesAsRead(test *testing.T) {
 }
 
 func TestInitialsStandForAName(test *testing.T) {
-	cases := map[string]string{"go-docs": "GD", "alice": "A", "@bob": "B", "projects-general-x": "PG", "": "?"}
+	cases := map[string]string{"go-docs": "GD", "alice": "A", "@bob": "B", "projects-general-x": "PG", "api + docs": "AD", "": "?"}
 	for name, want := range cases {
 		if got := Initials(name); got != want {
 			test.Errorf("%q: got %q, want %q", name, got, want)

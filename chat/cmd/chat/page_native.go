@@ -155,7 +155,7 @@ func (chat *screen) composerPill(context *ui.Context) {
 	}
 	layout := ui.Layout{Width: ui.Grow(), Height: ui.Fixed(pillHeight), Padding: ui.Padding{Left: 18, Right: 6}, Gap: 6, AlignY: ui.Center}
 	context.Frame(layout, pill, func() {
-		submitted := context.EntryField("draft", &chat.link.draft, ui.TextFieldOptions{Placeholder: "Message " + conversation.Title(chat.open), Plain: true})
+		submitted := context.EntryField("draft", &chat.link.draft, ui.TextFieldOptions{Placeholder: "Message " + conversation.Name(chat.open, chat.me), Plain: true})
 		ready := strings.TrimSpace(chat.link.draft) != ""
 		button, ink := ui.Look{Fill: theme.Line, Radius: sendSize / 2}, theme.InkQuiet
 		if ready {

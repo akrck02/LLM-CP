@@ -173,9 +173,15 @@ func (chat *screen) liveDot(context *ui.Context) {
 // openTopic opens a chat, on a phone in place of the list.
 func (chat *screen) openTopic(topic string) {
 	chat.open, chat.showingList = topic, false
-	chat.section = sessionsSection
-	if !strings.HasPrefix(topic, "@") {
-		chat.section = topicsSection // the list shows the chat opened among its kind
+	// the list shows the chat opened among its kind
+	_, isMine := conversation.Partner(topic, chat.me)
+	switch {
+	case strings.HasPrefix(topic, "@") || isMine:
+		chat.section = sessionsSection
+	case conversation.IsPair(topic):
+		chat.section = betweenSessionsSection
+	default:
+		chat.section = topicsSection
 	}
 }
 
@@ -199,8 +205,8 @@ func (chat *screen) chatRow(context *ui.Context, row *conversation.Chat) bool {
 		context.Box(ui.Layout{Direction: ui.Vertical, Width: ui.Grow(), Gap: 4}, func() {
 			last, written := row.Last()
 			context.Box(ui.Layout{Width: ui.Grow(), AlignY: ui.Center}, func() {
-				context.Text(conversation.Title(row.Topic), ui.TextStyle{Weight: draw2d.Bold})
-				if chat.log.Group(row.Topic) != nil {
+				context.Text(conversation.Name(row.Topic, chat.me), ui.TextStyle{Weight: draw2d.Bold})
+				if chat.isGroup(row.Topic) {
 					context.Chip("", "group", ui.ChipLook{Fill: theme.PrimaryTint, Ink: theme.Primary})
 				}
 				context.Spacer()
@@ -235,7 +241,7 @@ func (chat *screen) openChat(context *ui.Context, narrow bool) {
 	theme := context.Theme
 	open := chat.log.Open(chat.open)
 	if open == nil && chat.open != "" {
-		open = &conversation.Chat{Topic: chat.open} // a group just made, nobody wrote there yet
+		open = &conversation.Chat{Topic: chat.open} // a group just made, or a pair the first message will make
 	}
 	pane := chat.paneLook(theme, true)
 	if narrow {
@@ -269,7 +275,9 @@ func (chat *screen) openChat(context *ui.Context, narrow bool) {
 				}
 			})
 		})
-		chat.composer(context)
+		if !conversation.IsReadOnly(open.Topic, chat.me) {
+			chat.composer(context)
+		}
 	})
 }
 
@@ -285,17 +293,17 @@ func (chat *screen) chatHeader(context *ui.Context, open *conversation.Chat, nar
 		const size float32 = messageAvatar + 8
 		radius := size / 2
 		var mark func() // none, unless the chat is a group
-		if chat.log.Group(open.Topic) != nil {
+		if chat.isGroup(open.Topic) {
 			radius, mark = size*groupRoundness, func() { groupMark(context) }
 		}
 		if chat.log.IsMetrics(open.Topic) {
 			metricsAvatar(context, size)
 		} else {
-			markedAvatar(context, open.Topic, size, radius, mark)
+			markedAvatar(context, conversation.Name(open.Topic, chat.me), size, radius, mark)
 		}
 		context.Box(ui.Layout{Direction: ui.Vertical, Width: ui.Grow(), Gap: 3}, func() {
 			context.Box(ui.Layout{Gap: 8, AlignY: ui.Center}, func() {
-				context.Text(conversation.Title(open.Topic), ui.TextStyle{Weight: draw2d.Bold, Size: theme.TextSize + 1})
+				context.Text(conversation.Name(open.Topic, chat.me), ui.TextStyle{Weight: draw2d.Bold, Size: theme.TextSize + 1})
 				context.Chip("", chat.kindOf(open), ui.ChipLook{Fill: theme.PrimaryTint, Ink: theme.Primary})
 			})
 			if typing := chat.log.TypingIn(open.Topic, time.Now()); len(typing) > 0 {
@@ -307,7 +315,7 @@ func (chat *screen) chatHeader(context *ui.Context, open *conversation.Chat, nar
 		if !narrow {
 			memberFaces(context, chat.membersOf(open))
 		}
-		if group := chat.log.Group(open.Topic); group != nil && context.FlatIconButton("users", "") {
+		if group := chat.log.Group(open.Topic); group != nil && !conversation.IsPair(open.Topic) && context.FlatIconButton("users", "") {
 			chat.editMembers(*group)
 		}
 		chat.subscribeButton(context, open)
@@ -319,9 +327,10 @@ func (chat *screen) chatHeader(context *ui.Context, open *conversation.Chat, nar
 }
 
 // subscribeButton subscribes the person to the open topic or unsubscribes them; its icon says
-// what a click does. Inboxes and the groups the person is in are always followed, so they have none.
+// what a click does. Inboxes, pairs and the groups the person is in are not topics to follow, so
+// they have none.
 func (chat *screen) subscribeButton(context *ui.Context, open *conversation.Chat) {
-	if open.IsInbox() || chat.isMemberOf(open.Topic) {
+	if open.IsInbox() || conversation.IsPair(open.Topic) || chat.isMemberOf(open.Topic) {
 		return
 	}
 	subscribed := slices.Contains(chat.log.Subscriptions(), open.Topic)
@@ -340,9 +349,18 @@ func (chat *screen) isMemberOf(topic string) bool {
 	return group != nil && slices.Contains(group.Members, chat.me)
 }
 
-// kindOf says what a chat is: a group, a session's inbox or a plain topic.
+// isGroup tells whether a topic is a group made on purpose: a pair is a group of two the hub
+// makes, and shows as a conversation with a session.
+func (chat *screen) isGroup(topic string) bool {
+	return chat.log.Group(topic) != nil && !conversation.IsPair(topic)
+}
+
+// kindOf says what a chat is: a group, a conversation between two, a session's inbox or a plain
+// topic.
 func (chat *screen) kindOf(open *conversation.Chat) string {
 	switch {
+	case conversation.IsPair(open.Topic):
+		return "pair"
 	case chat.log.Group(open.Topic) != nil:
 		return "group"
 	case open.IsInbox():
@@ -356,6 +374,12 @@ func (chat *screen) kindOf(open *conversation.Chat) string {
 // aboutOf is the line under a chat's name: a group's theme, whose inbox it is, who publishes its
 // metrics, or who listens.
 func (chat *screen) aboutOf(open *conversation.Chat) string {
+	if partner, isMine := conversation.Partner(open.Topic, chat.me); isMine {
+		return "You and " + partner
+	}
+	if conversation.IsReadOnly(open.Topic, chat.me) {
+		return "Between " + strings.ReplaceAll(conversation.Name(open.Topic, chat.me), " + ", " and ") + ", to read"
+	}
 	if group := chat.log.Group(open.Topic); group != nil {
 		if group.Theme == "" {
 			return strings.Join(group.Members, ", ")
@@ -495,14 +519,14 @@ func avatar(context *ui.Context, name string, size float32) {
 // chatAvatar is a chat's picture: round for a session or a topic, a rounded square for a group.
 func (chat *screen) chatAvatar(context *ui.Context, topic string, size float32) {
 	radius := size / 2
-	if chat.log.Group(topic) != nil {
+	if chat.isGroup(topic) {
 		radius = size * groupRoundness
 	}
 	if chat.log.IsMetrics(topic) {
 		metricsAvatar(context, size)
 		return
 	}
-	markedAvatar(context, topic, size, radius, nil)
+	markedAvatar(context, conversation.Name(topic, chat.me), size, radius, nil)
 }
 
 // markedAvatar is a picture with a name's initials and, when mark is given, a small mark drawn

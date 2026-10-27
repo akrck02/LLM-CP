@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +26,9 @@ const (
 	archivedSection
 	// moreTopicsSection has no tab either: it opens from a row at the top of the topics
 	moreTopicsSection
+	// betweenSessionsSection opens from a row at the top of the topics too: the pairs the person
+	// is not in, to read
+	betweenSessionsSection
 )
 
 // sections are the side pane's tabs, in order, with their Lucide icons.
@@ -120,18 +124,12 @@ func (chat *screen) unreadIn(groups bool) int {
 }
 
 // chatsOf is the chats not archived that are topics the person follows (a group is a topic with
-// chosen members), or that are sessions' inboxes.
+// chosen members), or that are their conversations with sessions.
 func (chat *screen) chatsOf(topics bool) []*conversation.Chat {
 	if topics {
 		return chat.log.Topics()
 	}
-	var chosen []*conversation.Chat
-	for _, each := range chat.log.Chats() {
-		if each.IsInbox() {
-			chosen = append(chosen, each)
-		}
-	}
-	return chosen
+	return chat.log.Sessions(chat.me)
 }
 
 // sectionContent draws the chosen section's list.
@@ -144,11 +142,14 @@ func (chat *screen) sectionContent(context *ui.Context) {
 			chat.archivedList(context)
 		case moreTopicsSection:
 			chat.moreTopicsList(context)
+		case betweenSessionsSection:
+			chat.betweenSessionsList(context)
 		case settingsSection:
 			chat.settings(context)
 		case topicsSection:
 			chat.archivedEntry(context)
 			chat.moreTopicsEntry(context)
+			chat.betweenSessionsEntry(context)
 			chat.chatRows(context, chat.chatsOf(true))
 		default:
 			chat.archivedEntry(context)
@@ -158,7 +159,7 @@ func (chat *screen) sectionContent(context *ui.Context) {
 }
 
 // contactList is every session on the hub: a dot that says it is there, what it is doing, and
-// the groups it is in. Clicking one opens its inbox.
+// the groups it is in. Clicking one opens the conversation with it.
 func (chat *screen) contactList(context *ui.Context) {
 	theme := context.Theme
 	contacts := chat.log.Contacts()
@@ -171,7 +172,7 @@ func (chat *screen) contactList(context *ui.Context) {
 		if context.Clickable("contact "+contact.Name, layout, rowLooks(theme, false), func() {
 			chat.contactRow(context, contact, now)
 		}) {
-			chat.openTopic("@" + contact.Name)
+			chat.openTopic(conversation.ConversationWith(contact.Name, chat.me))
 		}
 	}
 }
@@ -187,9 +188,11 @@ func (chat *screen) contactRow(context *ui.Context, contact conversation.Contact
 		} else {
 			context.Text("online", ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkSoft})
 		}
+		// its pairs are its conversations, not groups it was put in
+		chosen := slices.DeleteFunc(slices.Clone(contact.Groups), conversation.IsPair)
 		groups := "in no group"
-		if len(contact.Groups) > 0 {
-			groups = "in " + strings.Join(contact.Groups, ", ")
+		if len(chosen) > 0 {
+			groups = "in " + strings.Join(chosen, ", ")
 		}
 		context.Text(shortened(groups, membersLetters), ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
 	})
@@ -227,6 +230,26 @@ func (chat *screen) moreTopicsEntry(context *ui.Context) {
 	}
 }
 
+// betweenSessionsEntry is the row at the top of the topics that opens the conversations between
+// two sessions, when there are any.
+func (chat *screen) betweenSessionsEntry(context *ui.Context) {
+	between := len(chat.log.BetweenSessions(chat.me))
+	if between == 0 {
+		return
+	}
+	if entryRow(context, "messages-square", "Between sessions", between) {
+		chat.section = betweenSessionsSection
+	}
+}
+
+// betweenSessionsList is the conversations between two sessions, to read: the person is in none.
+func (chat *screen) betweenSessionsList(context *ui.Context) {
+	if context.FlatIconButton("chevron-left", "Back") {
+		chat.section = topicsSection
+	}
+	chat.chatRows(context, chat.log.BetweenSessions(chat.me))
+}
+
 // entryRow is a quiet row that opens a list kept apart: its icon, its name and how many it holds.
 // It tells whether it was clicked.
 func entryRow(context *ui.Context, icon, label string, count int) bool {
@@ -262,7 +285,7 @@ func (chat *screen) moreTopicsList(context *ui.Context) {
 			if context.Clickable("more "+each.Topic, ui.Layout{Width: ui.Grow(), Gap: 12, AlignY: ui.Center}, rowLooks(theme, each.Topic == chat.open), func() {
 				chat.chatAvatar(context, each.Topic, listAvatar)
 				context.Box(ui.Layout{Direction: ui.Vertical, Width: ui.Grow(), Gap: 2}, func() {
-					context.Text(conversation.Title(each.Topic), ui.TextStyle{Weight: draw2d.Bold})
+					context.Text(conversation.Name(each.Topic, chat.me), ui.TextStyle{Weight: draw2d.Bold})
 					context.Text(strconv.Itoa(len(each.Messages))+" messages", ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
 				})
 			}) {
@@ -292,7 +315,7 @@ func (chat *screen) archivedList(context *ui.Context) {
 		context.Box(ui.Layout{Width: ui.Grow(), Padding: ui.PadXY(10, 8), Gap: 12, AlignY: ui.Center}, func() {
 			chat.chatAvatar(context, each.Topic, listAvatar)
 			context.Box(ui.Layout{Direction: ui.Vertical, Width: ui.Grow(), Gap: 2}, func() {
-				context.Text(conversation.Title(each.Topic), ui.TextStyle{Weight: draw2d.Bold})
+				context.Text(conversation.Name(each.Topic, chat.me), ui.TextStyle{Weight: draw2d.Bold})
 				context.Text(strconv.Itoa(len(each.Messages))+" messages", ui.TextStyle{Size: theme.SmallTextSize, Color: theme.InkQuiet})
 			})
 			if context.FlatIconButton("archive-restore", "Restore") {

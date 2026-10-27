@@ -36,15 +36,18 @@ func (log *Log) WithSubscription(topic string, subscribed bool) []string {
 }
 
 // Topics lists the chats not archived that are topics the reader follows, the newest first.
-// Inboxes are not topics: a message to someone always shows.
+// Inboxes and pairs are not topics: they are conversations with sessions (see Sessions).
 func (log *Log) Topics() []*Chat {
-	return slices.DeleteFunc(log.Chats(), func(chat *Chat) bool { return chat.IsInbox() || !log.IsSubscribed(chat.Topic) })
+	return slices.DeleteFunc(log.Chats(), func(chat *Chat) bool { return isPersonal(chat) || !log.IsSubscribed(chat.Topic) })
 }
+
+// isPersonal tells whether a chat is a conversation with a session rather than a topic.
+func isPersonal(chat *Chat) bool { return chat.IsInbox() || IsPair(chat.Topic) }
 
 // MoreTopics lists the chats not archived that are topics the reader does not follow, by name,
 // so one is easy to find and subscribe to.
 func (log *Log) MoreTopics() []*Chat {
-	chats := slices.DeleteFunc(log.Chats(), func(chat *Chat) bool { return chat.IsInbox() || log.IsSubscribed(chat.Topic) })
+	chats := slices.DeleteFunc(log.Chats(), func(chat *Chat) bool { return isPersonal(chat) || log.IsSubscribed(chat.Topic) })
 	slices.SortFunc(chats, func(first, second *Chat) int { return strings.Compare(first.Topic, second.Topic) })
 	return chats
 }
