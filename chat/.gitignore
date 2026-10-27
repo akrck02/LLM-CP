@@ -1,0 +1,6 @@
+out/
+web/chat.wasm
+web/wasm_exec.js
+*.apk
+*.log
+/llmcp-chat
