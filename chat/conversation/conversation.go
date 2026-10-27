@@ -48,6 +48,11 @@ type Log struct {
 	state State
 	// read is, per topic, the number of the newest message read there
 	read map[string]uint64
+	// reader is who reads the log, and subscribed the topics they follow; until the page knows
+	// them, knowsSubscriptions is false and every topic is listed
+	reader             string
+	subscribed         []string
+	knowsSubscriptions bool
 }
 
 // Add puts a message in its chat, unread, unless it was added already.
