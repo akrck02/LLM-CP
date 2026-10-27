@@ -1,0 +1,36 @@
+<h1 id="use-papiro-as-a-docker-container">Use papiro as a docker container 🐳</h1>
+
+<hr>
+
+<p>Papiro is published as a container image for amd64 and arm64: <code>ghcr.io/akrck02/papiro</code>.
+It indexes the documents in <code>/resources/uploads</code>, serves the wiki on port <code>8000</code>, and indexes
+them again a few seconds after they change. Obsidian vaults (a folder with <code>.obsidian</code>) are
+detected.</p>
+
+<p>For the sake of simplicity we will use docker compose in this example, feel free to use whatever
+you prefer.</p>
+<pre><code class="language-yaml"><span class="nt">services</span><span class="p">:</span>
+  <span class="nt">papiro</span><span class="p">:</span>
+    <span class="nt">container_name</span><span class="p">:</span> <span class="l">papiro</span>
+    <span class="nt">image</span><span class="p">:</span> <span class="l">ghcr.io/akrck02/papiro:latest</span>
+    <span class="nt">volumes</span><span class="p">:</span>
+      - <span class="l">./my-documents:/resources/uploads</span>
+    <span class="nt">environment</span><span class="p">:</span>
+      <span class="nt">PAPIRO_TITLE</span><span class="p">:</span> <span class="s2">&#34;My wiki&#34;</span>       <span class="c"># the title of the wiki</span>
+      <span class="nt">PAPIRO_WATCH_SECONDS</span><span class="p">:</span> <span class="m">5</span>       <span class="c"># how often to look for changes, 0 to never</span>
+    <span class="nt">ports</span><span class="p">:</span>
+      - <span class="m">80</span><span class="p">:</span><span class="m">8000</span>
+    <span class="nt">restart</span><span class="p">:</span> <span class="l">always</span>
+</code></pre>
+
+<p>Add your documents to the <code>my-documents</code> directory and start the container using:</p>
+
+<blockquote>
+<p>docker compose up</p>
+</blockquote>
+
+<hr>
+
+<blockquote>
+<p>Congratulations 🎉🎉 <br> &mdash; your wiki is now ready to visit in your domain running as a docker container. &mdash;</p>
+</blockquote>
