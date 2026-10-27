@@ -88,7 +88,7 @@ them (R4).
 - [x] T4 — Page and app: fetch the subscriptions at start, the header's subscribe button, the
   "More topics" list · `chat/cmd/chat/sections.go`, `draw.go`, `page_web.go`, `page_native.go` ·
   serves R2, R3, R6 · check: in headless Chromium, subscribe, unsubscribe, reload, the list stays
-- [ ] T5 — Docs: what subscribing means in the chat, and the endpoint · `docs/5-guides/
+- [x] T5 — Docs: what subscribing means in the chat, and the endpoint · `docs/5-guides/
   1-watching-the-sessions.md`, `docs/8-contributing.md` (the chat server's routes) · serves R1–R7
 
 Each task leaves the chat working. The filter (T3) only switches on in T4, once the page knows the
@@ -109,6 +109,9 @@ Built on `feature/chat-subscriptions`, not pushed; AI-written, pending human rev
 - Checked in headless Chromium on a private hub: a new name sees no topics; subscribing from More
   topics and from the header lists the topic and makes the session listen; a reload keeps it;
   unsubscribing takes it away, from the file and from the hub.
+- T5's docs (`docs/5-guides/1-watching-the-sessions.md`, `docs/8-contributing.md`) are edited
+  but **not committed**: both are another session's uncommitted work, so they still need
+  committing with it.
 - Not checked: the Android app (no device), and other browsers.
 - Known: when the first message to arrive is in a topic the person does not follow, it still
   opens as the first chat, as before.
