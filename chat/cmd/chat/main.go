@@ -60,6 +60,8 @@ type screen struct {
 	// modeRecalled is whether the mode the person chose last time was looked for: in the first
 	// frame, once the platform has given the program its storage
 	modeRecalled bool
+	// modeChosen is whether the person chose night or day; until then the chat follows the system
+	modeChosen bool
 }
 
 func main() {

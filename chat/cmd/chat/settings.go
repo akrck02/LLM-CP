@@ -10,10 +10,12 @@ import (
 	"github.com/akrck02/go-ui/window"
 )
 
-// modePreference is where the person's choice of night or day is kept between runs.
+// modePreference is where the person's choice of night or day is kept between runs. Until they
+// choose, the chat is as the system is.
 const (
 	modePreference = "mode"
 	lightMode      = "light"
+	darkMode       = "dark"
 )
 
 // settings is the settings section: the appearance, and the server the app is linked to.
@@ -30,9 +32,10 @@ func (chat *screen) settings(context *ui.Context) {
 	})
 }
 
-// chooseMode switches between night and day, and keeps the choice for the next run.
+// chooseMode switches between night and day, and keeps the choice for the next run: from then on
+// the chat no longer follows the system.
 func (chat *screen) chooseMode(dark bool) {
-	mode, kept := bubble.ModeDark, ""
+	mode, kept := bubble.ModeDark, darkMode
 	if !dark {
 		mode, kept = bubble.ModeLight, lightMode
 	}
@@ -40,21 +43,43 @@ func (chat *screen) chooseMode(dark bool) {
 		slog.Warn("chat: the mode could not change", "error", err)
 		return
 	}
+	chat.modeChosen = true
 	if err := window.KeepPreference(modePreference, kept); err != nil {
-		slog.Warn("chat: the mode will be dark again next time", "error", err)
+		slog.Warn("chat: the mode will follow the system again next time", "error", err)
 	}
 }
 
-// recallMode uses the mode chosen last time, once, in the first frame.
+// recallMode uses the mode chosen last time, or the system's, once, in the first frame.
 func (chat *screen) recallMode() {
 	if chat.modeRecalled {
 		return
 	}
 	chat.modeRecalled = true
-	if kept, found := window.Preference(modePreference); found && kept == lightMode {
-		if err := chat.useMode(bubble.ModeLight); err != nil {
-			slog.Warn("chat: the light mode could not be used", "error", err)
-		}
+	kept, _ := window.Preference(modePreference) // nothing kept: the system's mode
+	chat.modeChosen = kept == lightMode || kept == darkMode
+	if err := chat.useMode(startingMode(kept, window.SystemPrefersDark())); err != nil {
+		slog.Warn("chat: the mode could not be used", "error", err)
+	}
+}
+
+// startingMode is the mode the chat opens in: the one the person kept, or else the system's.
+func startingMode(kept string, systemIsDark bool) bubble.Mode {
+	switch {
+	case kept == lightMode:
+		return bubble.ModeLight
+	case kept == darkMode, systemIsDark:
+		return bubble.ModeDark
+	}
+	return bubble.ModeLight
+}
+
+// followSystemMode takes the system's night or day when it changes, unless the person chose one.
+func (chat *screen) followSystemMode(systemIsDark bool) {
+	if chat.modeChosen {
+		return
+	}
+	if err := chat.useMode(startingMode("", systemIsDark)); err != nil {
+		slog.Warn("chat: the system's mode could not be used", "error", err)
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/akrck02/go-renderer/draw2d"
 	ui "github.com/akrck02/go-ui"
+	"github.com/akrck02/go-ui/window"
 
 	"github.com/akrck02/LLM-CP/chat/conversation"
 )
@@ -22,7 +23,21 @@ type link struct{}
 func (chat *screen) startLink() {
 	chat.me = pageName()
 	chat.reduceMotion = js.Global().Call("matchMedia", "(prefers-reduced-motion: reduce)").Get("matches").Bool()
+	chat.listenToSystemMode()
 	listenToEvents("events", chat.receive, chat.receiveState, chat.connected)
+}
+
+// listenToSystemMode follows the browser's night or day as it changes, while the person has not
+// chosen one in the settings.
+func (chat *screen) listenToSystemMode() {
+	query := js.Global().Call("matchMedia", "(prefers-color-scheme: dark)")
+	query.Call("addEventListener", "change", js.FuncOf(func(_ js.Value, arguments []js.Value) any {
+		chat.mutex.Lock()
+		chat.followSystemMode(arguments[0].Get("matches").Bool())
+		chat.mutex.Unlock()
+		window.Wake()
+		return nil
+	}))
 }
 
 // act asks the server for an action at a path (groups, archive, restore), away from the frame;
