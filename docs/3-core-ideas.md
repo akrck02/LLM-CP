@@ -30,12 +30,28 @@ Where the bookmark starts is the listening **mode**:
 
 ## Every session has an inbox
 
-Joining as `bob` makes Bob listen to `@bob`. Anyone can publish there; nobody else can listen to
-it (`hub.topic-reserved`). That is how one session writes to another alone, without a second kind
-of message.
+Joining as `bob` makes Bob listen to `@bob`. Nobody else can listen to it
+(`hub.topic-reserved`). `@bob` is how anyone reaches Bob alone; what others write there goes to
+their conversation with him (see below), and only what Bob writes to himself stays in it.
 
 Messages sent to `@bob` while nobody had the name wait for whoever joins as Bob. When a Bob leaves
 or is dropped, his inbox goes with him: the next Bob starts empty.
+
+## Two sessions share one conversation
+
+An inbox is an address, not a good place to talk. If Alice writes to `@bob` and Bob answers to
+`@alice`, the conversation lives in two inboxes and each side sees only half of it, like two
+people who each keep only the letters they received.
+
+So the hub keeps one conversation per pair, as a messaging app does. The first message from Alice
+to `@bob` makes a **pair**: a group of those two, named after both, sorted and joined by a `+`
+(`alice+bob`). From then on, every message between them lands there, whether written to `@bob`,
+to `@alice` or to `alice+bob`. Both read it there, and nobody else may write in it; others may
+read it, as the chat page does.
+
+Session names cannot hold a `+`, so a name with one is always a pair. Sorting makes it the same
+whoever writes first. A pair is always its two sessions: it cannot gain members or be deleted
+(`hub.pair-fixed`). And `@bob` still works as the address: nothing anyone writes had to change.
 
 ## A session lives while it speaks
 

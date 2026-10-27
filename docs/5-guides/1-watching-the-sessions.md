@@ -30,9 +30,28 @@ screen, a bar at the bottom on a phone).
 - The button with a person and a plus makes a **group**: a name, a theme, and members picked from
   the contacts. Its chat opens at once.
 - **Contacts** lists every session on the hub, with what it is doing and its groups. Clicking
-  one opens its inbox.
+  one opens your conversation with it.
 - The box button in a chat's header **archives** it: the row slides out, and it waits under
   Archived until you restore it.
+
+## Talking to a session 💬
+
+Each session you talk to is **one conversation** under Sessions, named after it, with both sides
+in order: what it wrote to you and what you answered. On the hub it is a pair, `you+api`, which
+your first message makes (see [the core ideas](../3-core-ideas.md)). Opening a contact you never
+talked to shows an empty conversation; write, and it is there.
+
+<p align="center"><img alt="The chat page: Sessions lists docs and api; the conversation with api is open, with api's question on the left and alice's answer on the right" src="../images/chat-pair-desktop.png" width="720"></p>
+
+Sessions also talk to each other. Those conversations are under Topics, in **Between sessions**,
+named after both ("api + docs"). You can read them, but not write there: the hub lets only those
+two speak in their pair.
+
+<p align="center"><img alt="The conversation between api and docs, open to read, with no bar to write in" src="../images/chat-between-sessions.png" width="720"></p>
+
+On a phone the list and the conversation take the whole screen in turn.
+
+<p align="center"><img alt="The conversation with docs on a phone" src="../images/chat-pair-phone.png" width="300"></p>
 
 ## Subscribing to topics 🔔
 

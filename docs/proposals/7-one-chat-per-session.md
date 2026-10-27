@@ -127,14 +127,38 @@ top. Chat: `conversation.go`, `sections.go`, `draw.go`, on top of proposal 6.
 On `feature/chat-subscriptions`, after proposal 3 of llm-center; one commit per task, no push.
 A pair is recognised by the `+` in its name, so the protocol needs no new field.
 
-- [ ] T0 — Commit the shut-down session's uncommitted edits in `hub/`, `protocol/`, `cmd/llmcp/` and the docs as they are, in one commit of their own (`llmcp: commit the work left uncommitted`), before anything else · · run `go test -race ./...` first and say in the commit if anything fails
-- [ ] T1 — Pair names: `PairOf(a, b)` (sorted, joined by `+`), `validTopic` accepts a pair of two valid names, length up to two names and the `+` · `hub/names.go` · R1 · tests `a pair's name is the same whoever writes first`, `a plus sign is only allowed between two names`
-- [ ] T2 — `Publish` to `@B` from `A` (A ≠ B) creates the pair group if needed (members A and B, both listening, kept) and adds the message to it; `group add`, `remove` and `delete` refuse a pair with `hub.pair-fixed` · `hub/hub.go`, `hub/group.go`, `hub/errors.go` · R1–R3 · tests `the first message to someone creates the pair`, `a message to @name lands in the pair`, `a third session cannot publish in a pair`, `a pair is kept`, `a pair cannot change its members`, and the errors test for the new code
-- [ ] T3 — The command line: `publish` prints the pair it landed in; `groups` prints pairs on one line after the groups · `cmd/llmcp/print.go` · R4 · print tests
-- [ ] T4 — The chat's conversations: a pair the person is in is one conversation titled with the other member; a pair without the person is read-only; opening a contact with no pair shows an empty conversation whose first message goes to `@contact` · `chat/conversation/`, `chat/cmd/chat/sections.go`, `draw.go` · R5, R6 · tests `a pair is one conversation named after the other`, `a pair without me is read-only`; screenshots desktop and phone in `docs/images/`
-- [ ] T5 — Docs and skill: pairs in `docs/3-core-ideas.md` and `docs/6-reference/1-commands.md` (the `+`, the redirect, `hub.pair-fixed`), the chat guide; the sessions skill (`~/projects/llm-guidelines/skills/sessions/SKILL.md`: edit in place, do not commit, it holds others' edits) gets the two lines of "The sessions skill" above · R7 · by hand: two sessions talk through a pair following the skill
+- [x] T0 — Commit the shut-down session's uncommitted edits in `hub/`, `protocol/`, `cmd/llmcp/` and the docs as they are, in one commit of their own (`llmcp: commit the work left uncommitted`), before anything else · · run `go test -race ./...` first and say in the commit if anything fails
+- [x] T1 — Pair names: `PairOf(a, b)` (sorted, joined by `+`), `validTopic` accepts a pair of two valid names, length up to two names and the `+` · `hub/names.go` · R1 · tests `a pair's name is the same whoever writes first`, `a plus sign is only allowed between two names`
+- [x] T2 — `Publish` to `@B` from `A` (A ≠ B) creates the pair group if needed (members A and B, both listening, kept) and adds the message to it; `group add`, `remove` and `delete` refuse a pair with `hub.pair-fixed` · `hub/hub.go`, `hub/group.go`, `hub/errors.go` · R1–R3 · tests `the first message to someone creates the pair`, `a message to @name lands in the pair`, `a third session cannot publish in a pair`, `a pair is kept`, `a pair cannot change its members`, and the errors test for the new code
+- [x] T3 — The command line: `publish` prints the pair it landed in; `groups` prints pairs on one line after the groups · `cmd/llmcp/print.go` · R4 · print tests
+- [x] T4 — The chat's conversations: a pair the person is in is one conversation titled with the other member; a pair without the person is read-only; opening a contact with no pair shows an empty conversation whose first message goes to `@contact` · `chat/conversation/`, `chat/cmd/chat/sections.go`, `draw.go` · R5, R6 · tests `a pair is one conversation named after the other`, `a pair without me is read-only`; screenshots desktop and phone in `docs/images/`
+- [x] T5 — Docs and skill: pairs in `docs/3-core-ideas.md` and `docs/6-reference/1-commands.md` (the `+`, the redirect, `hub.pair-fixed`), the chat guide; the sessions skill (`~/projects/llm-guidelines/skills/sessions/SKILL.md`: edit in place, do not commit, it holds others' edits) gets the two lines of "The sessions skill" above · R7 · by hand: two sessions talk through a pair following the skill
 - [ ] T6 — Hand-over to deploy-manager: build `llmcp` and the chat; installing means a hub restart, so deploy-manager warns everyone on `center` first · · by hand on :8090
 
 ## Result
 
-*Filled at the end.*
+Built on `feature/chat-subscriptions`, one commit per task, not pushed. `gofmt`, `go vet` and
+`go test -race ./...` pass in both modules. T0 committed the earlier session's work as it was;
+its tests passed before anything was built on it.
+
+Checked in headless Chromium against a private hub: the pair with api is one conversation named
+"api"; "api + docs" is under Topics → Between sessions, with no bar to write in; opening a contact
+with no pair shows an empty conversation, and a message from the page makes the pair
+(`docs/images/chat-*.png`).
+
+What differs from the plan:
+
+- **A pair's name must be sorted** to be valid: `bob+alice` is `hub.invalid-name`. Writing
+  `@bob` needs no order, so only someone typing a pair by hand meets it.
+- **A pair the sender is in is made by writing to its name** too, not only to `@name`; a third
+  session writing there gets `hub.not-a-member`, whether the pair exists or not.
+- **Making a pair keeps it at once**: if the keep file cannot be written, the message is still
+  published and `publish` reports `hub.keep-unwritable`.
+- **The chat** shows a pair's kind as "pair", leaves pairs out of a contact's "in …" line, and
+  names a pair between others "api + docs" ("AD" in its picture).
+- **The skill** (T5) is committed in `llm-guidelines` (`dc1a1a8`), after the author's rule that
+  the uncommitted edits there are ours: the earlier metrics work and proposal 3's tasks section
+  went in first, each in its own commit. The installed copy in `~/.claude/skills` is not updated.
+
+Not tested: R7 by hand (two sessions talking through a pair after following the skill), and the
+Android app.

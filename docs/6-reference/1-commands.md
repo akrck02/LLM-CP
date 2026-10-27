@@ -30,13 +30,13 @@ Every command of `llmcp`, its options and its errors. Options can go anywhere on
 | `sessions` | one line per session: `bob: @bob api` | `llmcp sessions` |
 | `listen <topic>` | `listening to api` | `llmcp listen api --past` |
 | `unlisten <topic>` | `not listening to api` | `llmcp unlisten api` |
-| `publish <topic> <text…>` | `#3 published to api` | `llmcp publish @bob "can you check it?"` |
+| `publish <topic> <text…>` | `#3 published to api`; to `@bob`, `#3 published to alice+bob` | `llmcp publish @bob "can you check it?"` |
 | `read` | one line per message, `#3 api alice: text`, or `no messages` | `llmcp read --wait 60` |
 | `group create <name>` | `group api created; its members listen to it` | `llmcp group create api --theme "the tasks API" --members alice,bob` |
 | `group add <name> <member>` | `carol is in api` | `llmcp group add api carol` |
 | `group remove <name> <member>` | `bob left api` | `llmcp group remove api bob` |
 | `group delete <name>` | `api is a plain topic again` | `llmcp group delete api` |
-| `groups` | one line per group, `api (alice, bob): the tasks API`, or `no groups` | `llmcp groups` |
+| `groups` | one line per group, `api (alice, bob): the tasks API`, then `pairs: alice+bob, …`, or `no groups` | `llmcp groups` |
 | `archive <topic>` | `api archived` | `llmcp archive api` |
 | `restore <topic>` | `api restored` | `llmcp restore api` |
 | `typing` | `alice is typing` | `llmcp typing`, `llmcp typing --stop` |
@@ -52,6 +52,12 @@ A **group** is a topic with a theme and chosen members. Its members listen to it
 are on the hub, those who join later too, and only they publish there. Deleting a group keeps its
 messages and listeners; it only drops the theme and the rule.
 
+A **pair** is the group of two sessions that write to each other, named after both, sorted and
+joined by `+`: `alice+bob`. The hub makes it with the first message from one to the other's
+`@name`, and files every later one there, so both read the whole conversation. `group add`,
+`group remove` and `group delete` refuse a pair (`hub.pair-fixed`). A message to one's own `@name`
+stays in one's inbox.
+
 **Archiving** only keeps a chat out of the chat page's list: its messages stay, sessions still
 read and publish there, and a new message leaves it archived until someone restores it.
 
@@ -66,7 +72,8 @@ hub fills `at` (Unix milliseconds) when it is missing and forgets points older t
 `metric` declares the topic when nobody has. To change a topic's kind, remove it and make it again.
 
 Names of sessions and topics use letters, digits, `-`, `_`, `.` and `/`, at most 64 of them. A
-topic that starts with `@` is a session's own.
+topic that starts with `@` is a session's own; one with a `+` between two different names, sorted,
+is a pair.
 
 ## Errors
 
@@ -86,7 +93,8 @@ hub.session-not-found: nobody (no session has that name; join first)
 | `hub.empty-message` | a message needs some text |
 | `hub.group-exists` | a group of that name exists already |
 | `hub.group-not-found` | no group has that name |
-| `hub.not-a-member` | only a group's members publish to it (or leave it) |
+| `hub.not-a-member` | only a group's members publish to it (or leave it); a pair's, only its two |
+| `hub.pair-fixed` | a pair is always its two sessions: it cannot change members or be deleted |
 | `server.socket-in-use` | a hub is already listening on that socket |
 | `server.socket-not-opened` | the socket could not be made |
 | `llmcp.hub-not-running` | no hub answers; start one with `llmcp hub &`. The cause that follows says why (no socket, permission denied) |
