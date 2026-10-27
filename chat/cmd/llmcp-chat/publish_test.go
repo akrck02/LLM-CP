@@ -39,7 +39,11 @@ func startHub(test *testing.T) (publisher, context.Context) {
 	hubServer := server.New(hub.New(time.Hour, time.Now))
 	go hubServer.Serve(listener) // its error only says the test stopped the server
 	test.Cleanup(hubServer.Stop)
-	return publisher{socket: socket}, context.Background()
+	kept, err := loadSubscriptions(filepath.Join(test.TempDir(), "subscriptions.json"))
+	if err != nil {
+		test.Fatal(err)
+	}
+	return publisher{socket: socket, kept: kept}, context.Background()
 }
 
 func TestMembersCanBeAddedToAGroupAndTakenOut(test *testing.T) {

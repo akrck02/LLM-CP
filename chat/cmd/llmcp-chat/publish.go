@@ -23,9 +23,11 @@ type written struct {
 	Text  string `json:"text"`
 }
 
-// publisher sends what the person writes in the page to the hub, as a session of their name.
+// publisher sends what the person writes in the page to the hub, as a session of their name,
+// and keeps that session listening to the topics the person is subscribed to.
 type publisher struct {
 	socket string
+	kept   *subscriptions
 }
 
 // servePublish takes one message as JSON and publishes it, joining the hub first if needed.

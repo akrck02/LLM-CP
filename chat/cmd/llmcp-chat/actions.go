@@ -78,7 +78,7 @@ func (sender publisher) serveAction(call actionCall) http.HandlerFunc {
 }
 
 // withClient makes a call to the hub as a session; one not joined yet, or dropped after a
-// silence, joins and tries once more.
+// silence, joins, listens again to the person's subscriptions, and tries once more.
 func (sender publisher) withClient(request context.Context, as string, call func(protocol.HubClient) error) error {
 	client, connection, err := connectTo(sender.socket)
 	if err != nil {
@@ -90,6 +90,9 @@ func (sender publisher) withClient(request context.Context, as string, call func
 		return err
 	}
 	if _, err := client.Join(request, &protocol.SessionRequest{Session: as}); err != nil {
+		return err
+	}
+	if err := listenTo(request, client, as, sender.kept.of(as)); err != nil {
 		return err
 	}
 	return call(client)

@@ -20,9 +20,15 @@ func main() {
 	address := flag.String("address", "127.0.0.1:8090", "where the page is served; :8090 to reach it from other machines")
 	webDirectory := flag.String("web", "web", "the folder with index.html, chat.wasm and wasm_exec.js")
 	socket := flag.String("socket", os.Getenv("LLMCP_SOCKET"), "the hub's socket (default as llmcp's)")
+	subscriptionsPath := flag.String("subscriptions", "subscriptions.json", "the file where each person's subscriptions are kept")
 	flag.Parse()
 	if *socket == "" {
 		*socket = defaultSocket()
+	}
+	kept, err := loadSubscriptions(*subscriptionsPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "llmcp-chat:", err)
+		os.Exit(1)
 	}
 
 	relay := newRelay()
@@ -31,13 +37,14 @@ func main() {
 	routes := http.NewServeMux()
 	routes.Handle("/", http.FileServer(http.Dir(*webDirectory)))
 	routes.HandleFunc("/events", relay.serveEvents)
-	sender := publisher{socket: *socket}
+	sender := publisher{socket: *socket, kept: kept}
 	routes.Handle("/publish", fromOwnPage(http.HandlerFunc(sender.servePublish)))
 	routes.Handle("/groups", fromOwnPage(sender.serveAction(createGroup)))
 	routes.Handle("/members/add", fromOwnPage(sender.serveAction(addMembers)))
 	routes.Handle("/members/remove", fromOwnPage(sender.serveAction(removeMembers)))
 	routes.Handle("/archive", fromOwnPage(sender.serveAction(archiveTopic)))
 	routes.Handle("/restore", fromOwnPage(sender.serveAction(restoreTopic)))
+	routes.Handle("/subscriptions", sender.serveSubscriptions())
 	slog.Info("serving the chat", "address", *address, "socket", *socket)
 	if err := http.ListenAndServe(*address, logRequests(routes)); err != nil {
 		fmt.Fprintln(os.Stderr, "llmcp-chat:", err)
